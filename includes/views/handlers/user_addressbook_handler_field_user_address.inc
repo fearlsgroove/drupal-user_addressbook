@@ -21,7 +21,7 @@ class user_addressbook_handler_field_user_address extends views_handler_field {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['link_to_user_address'] = array('default' => FALSE);
+    $options['link_to_user_address'] = array('default' => TRUE);
 
     return $options;
   }

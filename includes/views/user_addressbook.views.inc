@@ -16,6 +16,9 @@ function user_addressbook_views_data() {
     'field' => 'address_id',
     'title' => t('User addresses'),
     'help' => t('User addresses containing user defined addresses.'),
+    'defaults' => array(
+      'field' => 'name',
+    ),
    // 'access query tag' => 'user_addressbook_access',
   );
   $data['user_address']['table']['entity type'] = 'user_address';
@@ -25,7 +28,7 @@ function user_addressbook_views_data() {
     'title' => t('User address ID'),
     'help' => t('The unique internal identifier of the user address.'),
     'field' => array(
-      'handler' => 'user_addressbook_handler_field_user_address',
+      'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
     ),
     'filter' => array(
@@ -36,6 +39,29 @@ function user_addressbook_views_data() {
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_numeric',
+    ),
+  );
+
+  // Expose the profile ID.
+  $data['user_address']['name'] = array(
+    'title' => t('User address name'),
+    'help' => t('The name identifier of the user address.'),
+    'field' => array(
+      'handler' => 'user_addressbook_handler_field_user_address',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+      'help' => t('User address name.'),
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+      'help' => t('User address name.'),
+      'many to one' => TRUE,
+      'empty field name' => t('Uncategorized'),
     ),
   );
 

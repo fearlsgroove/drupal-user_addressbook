@@ -25,8 +25,8 @@ function user_addressbook_entity_info() {
         ),
       ),
       'view modes' => array(
-        'full' => array(
-          'label' => t('User address'),
+        'user_addressbook' => array(
+          'label' => t('User addressbook'),
           'custom settings' => FALSE,
         ),
       ),
@@ -334,6 +334,66 @@ function user_addressbook_page($account) {
  */
 function user_addressbook_adddress_view($user_address) {
   return entity_view('user_address', array($user_address));
+}
+
+/**
+ * Implements hook_entity_view().
+ *
+ * Adds the "edit", "delete" and "set as default" links to the customer profile.
+ */
+function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
+  if ($type == 'user_address' && $view_mode == 'user_addressbook') {
+    $links = array();
+    global $user;
+    if (user_access('edit own user_addressbook')) {
+      /*
+      static $record;
+      if (empty($record) || $record->uid != $user->uid || $record->type != $entity->type) {
+        $query = db_select('commerce_addressbook_defaults', 'cad')
+          ->fields('cad')
+          ->condition('uid', $user->uid)
+          ->condition('type', $entity->type)
+          ->execute();
+        $record = $query->fetchObject();
+      }
+      drupal_add_library('system', 'drupal.ajax');
+      if (empty($record) || ($record->profile_id != $entity->profile_id)) {
+        $links['default'] = array(
+          '#theme' => 'link',
+          '#text' => t('set as default'),
+          '#path' => 'user/' . $entity->uid . '/addressbook/' . $entity->type . '/default/' . $entity->profile_id . '/nojs',
+          '#options' => array(
+            'attributes' => array('class' => array('use-ajax')),
+            'html' => FALSE,
+           ),
+          '#suffix' => ' | ',
+        );
+      }
+      */
+      $links['edit'] = array(
+        '#theme' => 'link',
+        '#text' => t('edit'),
+        '#path' => 'user/' . $entity->uid . '/addresses/address/' . $entity->address_id . '/edit',
+        '#options' => array(
+          'attributes' => array(),
+          'html' => FALSE,
+         ),
+        '#suffix' => ' | ',
+      );
+    }
+    if (user_access('edit own user_addressbook')) {
+      $links['delete'] = array(
+        '#theme' => 'link',
+        '#text' => t('delete'),
+        '#path' => 'user/' . $entity->uid . '/addresses/address/' . $entity->address_id . '/delete',
+        '#options' => array(
+          'attributes' => array(),
+          'html' => FALSE,
+         ),
+      );
+    }
+    $entity->content['commerce_addressbook_options'] = $links;
+  }
 }
 
 /**
