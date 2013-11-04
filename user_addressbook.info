@@ -1,0 +1,11 @@
+name = User Addressbook
+description = Addressbook for users using addressfield.
+package = Users
+core = 7.x
+
+; dependencies
+dependencies[] = views
+dependencies[] = addressfield
+
+; Module includes
+files[] = includes/user_addressbook.controller.inc

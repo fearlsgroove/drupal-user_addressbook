@@ -1,0 +1,343 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function user_addressbook_entity_info() {
+  $return = array(
+    'user_address' => array(
+      'label' => t('User'),
+      'base table' => 'user_address',
+      'uri callback' => 'user_addressbook_uri',
+      'controller class' => 'UserAddressEntityController',
+      'fieldable' => TRUE,
+      'entity keys' => array(
+        'id' => 'address_id',
+        'label' => 'name',
+      ),
+      'bundles' => array(
+        'user_address' => array(
+          'label' => t('User address'),
+          'admin' => array(
+            'path' => 'admin/config/people/addressbook',
+            'access arguments' => array('administer user addressbooks'),
+          ),
+        ),
+      ),
+      'view modes' => array(
+        'full' => array(
+          'label' => t('User address'),
+          'custom settings' => FALSE,
+        ),
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function user_addressbook_field_extra_fields() {
+  $return['user_address']['user_address'] = array(
+    'form' => array(
+      'name' => array(
+        'label' => t('Address name'),
+        'description' => t('Name for this addressbook.'),
+        'weight' => -20,
+      ),
+    ),
+    'display' => array(
+      'name' => array(
+        'label' => t('Address name'),
+        'description' => t('Name for this addressbook.'),
+        'weight' => -20,
+      ),
+    ),
+  );
+
+  return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function user_addressbook_menu() {
+  $items = array();
+
+  $items['user/%user/addresses'] = array(
+    'title' => 'Address Book',
+    'page callback' => 'user_addressbook_page',
+    'page arguments' => array(1),
+    'access callback' => 'user_access',
+    'access arguments' => array('edit own user_addressbook'),
+    'type' => MENU_LOCAL_TASK,
+    //'file' => 'includes/user_addressbook.pages.inc',
+    'weight' => 20,
+  );
+
+  $items['user/%user/addresses/create'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_addressbook_address_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('edit own user_addressbook'),
+    'title' => 'Add an address',
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'includes/user_addressbook.admin.inc',
+  );
+
+  $items['user/%user/addresses/address/%user_address'] = array(
+    'page callback' => 'user_addressbook_adddress_view',
+    'page arguments' => array(4),
+    'access arguments' => array('edit own user_addressbook'),
+    //'type' => MENU_CALLBACK,
+    'file' => 'includes/user_addressbook.admin.inc',
+  );
+
+  $items['user/%user/addresses/address/%user_address/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  $items['user/%user/addresses/address/%user_address/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_addressbook_address_form', 4),
+    'access arguments' => array('edit own user_addressbook'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/user_addressbook.admin.inc',
+  );
+/*
+  $items['user/%user/addressbook/default/%user_addressbook'] = array(
+    'page callback' => 'user_addressbook_default',
+    'page arguments' => array(1, 5),
+    'access callback' => 'user_addressbook_access',
+    'access arguments' => array('update', 5),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/user_addressbook.admin.inc',
+  );
+  $items['user/%user/addressbook/delete/%user_addressbook'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_addressbook_profile_options_delete_form', 1, 5),
+    'access callback' => 'commerce_addressbook_profile_access',
+    'access arguments' => array('delete', 5),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/commerce_addressbook.pages.inc',
+  );
+*/
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function user_addressbook_permission() {
+  $permissions = array(
+    "edit own user_addressbook" => array(
+      'title' => t('Edit own addressbook'),
+    ),
+    "edit any user_addressbook" => array(
+      'title' => t('Edit any addressbook'),
+    ),
+    "view own user_addressbook" => array(
+      'title' => t('View own addressbook'),
+    ),
+    "view any user_addressbook" => array(
+      'title' => t('View any addressbook'),
+    ),
+  );
+
+  return $permissions;
+}
+
+/**
+ * Fetch a user_addressbook object.
+ *
+ * @param $addressbook_id
+ *   Integer specifying the addressbook id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $user_address object or FALSE if it cannot be loaded.
+ *
+ * @see addressbook_load_multiple()
+ */
+function user_address_load($address_id, $reset = FALSE) {
+  $user_addresss = user_address_load_multiple(array($address_id), array(), $reset);
+  return reset($user_addresss);
+}
+
+/**
+ * Load multiple profiles based on certain conditions.
+ *
+ * @param $pids
+ *   An array of profile IDs.
+ * @param $conditions
+ *   An array of conditions to match against the {profile} table.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   An array of profile objects, indexed by pid.
+ *
+ * @see entity_load()
+ * @see user_addressbook_load()
+ * @see user_addressbook_load_by_user()
+ */
+function user_address_load_multiple($address_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('user_address', $address_ids, $conditions, $reset);
+}
+
+
+/**
+ * Fetch profiles by account.
+ *
+ * @param $account
+ *   The user account to load profiles for, or its uid.
+ * @param $type_name
+ *   To load a single profile, pass the type name of the profile to load.
+ * @return
+ *   Either a single profile or an array of profiles keyed by profile type.
+ *
+ * @see user_addressbook_load_multiple()
+ * @see profile2_profile2_delete()
+ * @see Profile::save()
+ */
+function user_addresses_load_by_user($account) {
+  // Use a separate query to determine all profile ids per user and cache them.
+  // That way we can look up profiles by id and benefit from the static cache
+  // of the entity loader.
+  $cache = &drupal_static(__FUNCTION__, array());
+  $uid = is_object($account) ? $account->uid : $account;
+
+  if (!isset($cache[$uid]) && !isset($cache[$uid]['addressbook'])) {
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', 'user_address')
+      ->propertyCondition('uid', $uid)
+      ->execute();
+    // Cache ids for further lookups.
+    $cache[$uid]['addressbook'] = user_address_load_multiple(array_keys($result['user_address']));
+  }
+
+  // Return an array containing user addresses.
+  return $cache[$uid]['addressbook'];
+}
+
+/**
+ * Implements callback_entity_info_uri().
+ */
+function user_addressbook_uri($user_address) {
+  return array(
+    'path' => 'user/' . $user_address->uid . '/addresses/address/' . $user_address->address_id,
+  );
+}
+
+/**
+ * Implements hook_enable().
+ */
+function user_addressbook_enable() {
+  user_addressbook_entity_configure();
+}
+
+/**
+ * Ensures the address field is present fir the user_address entities.
+ */
+function user_addressbook_entity_configure() {
+  // Define an addressfield for the user_address entities.
+  $field_name = 'user_addressbook_address';
+  $field = field_info_field($field_name);
+
+  $instance = field_info_instance('user_address', $field_name, 'user_address');
+  if (empty($field)) {
+    $field = array(
+      'field_name' => $field_name,
+      'type' => 'addressfield',
+      'cardinality' => 1,
+      'entity_types' => array('user_address'),
+      'translatable' => FALSE,
+    );
+
+    $field = field_create_field($field);
+  }
+  if (empty($instance)) {
+    $instance = array(
+      'field_name' => $field_name,
+      'entity_type' => 'user_address',
+      'bundle' => 'user_address',
+      'label' => t('Address'),
+      'required' => TRUE,
+      'widget' => array(
+        'type' => 'addressfield_standard',
+        'weight' => -10,
+        'settings' => array(
+          'format_handlers' => array('address', 'name-oneline'),
+        ),
+      ),
+      'display' => array(),
+    );
+
+    // Set the default display formatters for various view modes.
+    foreach (array('default', 'customer', 'administrator') as $view_mode) {
+      $instance['display'][$view_mode] = array(
+        'label' => 'hidden',
+        'type' => 'addressfield_default',
+        'weight' => -10,
+      );
+    }
+
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Page callback for listing customer profiles of a certain type.
+ *
+ * Embeds a view that shows the current default profile, and a view that shows
+ * all other profiles of the same type.
+ */
+function user_addressbook_page($account) {
+  $output = '';
+  $user_addresses = user_addresses_load_by_user($account);
+  $output = entity_view('user_address', $user_addresses);
+  /*
+  $arguments = array($account->uid, $profile_type);
+  $defaults_view = commerce_addressbook_retrieve_view('commerce_addressbook_defaults', 'default', $arguments);
+  $list_view = commerce_addressbook_retrieve_view('commerce_addressbook', 'default', $arguments);
+  if (!empty($defaults_view->result)) {
+    $output .= '<div id="commerce-addressbook-' . $profile_type . '-default">' . $defaults_view->render() . '</div>';
+  }
+  if (!empty($list_view->result)) {
+    $output .= '<div id="commerce-addressbook-' . $profile_type . '-list">' . $list_view->render() . '</div>';
+  }
+  */
+  return $output;
+}
+
+/**
+ * Page callback for listing customer profiles of a certain type.
+ *
+ * Embeds a view that shows the current default profile, and a view that shows
+ * all other profiles of the same type.
+ */
+function user_addressbook_adddress_view($user_address) {
+  return entity_view('user_address', array($user_address));
+}
+
+/**
+ * Returns an initialized customer profile object.
+ *
+ * @param $type
+ *   The type of customer profile to create.
+ * @param $uid
+ *   The uid of the user the customer profile is for.
+ *
+ * @return
+ *   A customer profile object with all default fields initialized.
+ */
+function user_addressbook_new($uid = 0) {
+  return entity_get_controller('user_address')->create(array(
+    'uid' => $uid,
+  ));
+}
