@@ -10,13 +10,13 @@
 function user_addressbook_views_data() {
   $data = array();
 
-  $data['user_address']['table']['group']  = t('Commerce Customer Profile');
+  $data['user_address']['table']['group']  = t('User addresses');
 
   $data['user_address']['table']['base'] = array(
     'field' => 'address_id',
     'title' => t('User addresses'),
     'help' => t('User addresses containing user defined addresses.'),
-    'access query tag' => 'user_addressbook_access',
+   // 'access query tag' => 'user_addressbook_access',
   );
   $data['user_address']['table']['entity type'] = 'user_address';
 
@@ -75,7 +75,7 @@ function user_addressbook_views_data() {
   // Expose the created and changed timestamps.
   $data['user_address']['created'] = array(
     'title' => t('Created date'),
-    'help' => t('The date the profile was created.'),
+    'help' => t('The date the user address was created.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
@@ -216,21 +216,21 @@ function user_addressbook_views_data() {
     'field' => array(
       'title' => t('Link'),
       'help' => t('Provide a simple link to the administrator view of the profile.'),
-      'handler' => 'commerce_customer_handler_field_customer_profile_link',
+      'handler' => 'user_addressbook_handler_field_user_address_link',
     ),
   );
   $data['user_address']['edit_user_address'] = array(
     'field' => array(
       'title' => t('Edit link'),
       'help' => t('Provide a simple link to edit the address.'),
-      'handler' => 'commerce_customer_handler_field_customer_profile_link_edit',
+      'handler' => 'user_addressbook_handler_field_user_address_link_edit',
     ),
   );
   $data['user_address']['delete_user_address'] = array(
     'field' => array(
       'title' => t('Delete link'),
       'help' => t('Provide a simple link to delete the profile.'),
-      'handler' => 'commerce_customer_handler_field_customer_profile_link_delete',
+      'handler' => 'user_addressbook_handler_field_user_address_link_delete',
     ),
   );
 
@@ -238,7 +238,7 @@ function user_addressbook_views_data() {
     'title' => t('Empty text'),
     'help' => t('Displays an appropriate empty text message for customer profile lists.'),
     'area' => array(
-      'handler' => 'commerce_customer_handler_area_empty_text',
+      'handler' => 'user_addressbook_handler_area_empty_text',
     ),
   );
 

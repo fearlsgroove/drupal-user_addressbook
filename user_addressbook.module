@@ -153,6 +153,16 @@ function user_addressbook_permission() {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function user_addressbook_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'user_addressbook') . '/includes/views',
+  );
+}
+
+/**
  * Fetch a user_addressbook object.
  *
  * @param $addressbook_id
@@ -217,8 +227,9 @@ function user_addresses_load_by_user($account) {
       ->entityCondition('entity_type', 'user_address')
       ->propertyCondition('uid', $uid)
       ->execute();
+    $user_addresses = !empty($result['user_address']) ? user_address_load_multiple(array_keys($result['user_address'])) : array();
     // Cache ids for further lookups.
-    $cache[$uid]['addressbook'] = user_address_load_multiple(array_keys($result['user_address']));
+    $cache[$uid]['addressbook'] = $user_addresses;
   }
 
   // Return an array containing user addresses.
