@@ -30,6 +30,7 @@ function user_addressbook_entity_info() {
           'custom settings' => FALSE,
         ),
       ),
+      'access callback' => 'user_address_access', 
     ),
   );
   return $return;
@@ -80,7 +81,7 @@ function user_addressbook_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_addressbook_address_form'),
     'access callback' => 'user_access',
-    'access arguments' => array('edit own user_addressbook'),
+    'access arguments' => array('edit own user_address'),
     'title' => 'Add an address',
     'type' => MENU_LOCAL_ACTION,
     'file' => 'includes/user_addressbook.admin.inc',
@@ -112,7 +113,7 @@ function user_addressbook_menu() {
   );
 
   $items['user/%user/addresses/address/%user_address/delete'] = array(
-    'title' => 'Edit',
+    'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_addressbook_address_form', 4),
     'access callback' => 'entity_access',
@@ -122,7 +123,7 @@ function user_addressbook_menu() {
   );
 
   $items['user/%user/addresses/address/%user_address/default'] = array(
-    'title' => 'Edit',
+    'title' => 'Make default',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_addressbook_address_form', 4),
     'access callback' => 'entity_access',
@@ -139,21 +140,45 @@ function user_addressbook_menu() {
  */
 function user_addressbook_permission() {
   $permissions = array(
-    "edit own user_address" => array(
+    "edit own user_address entities" => array(
       'title' => t('Edit own user addresses'),
     ),
-    "edit any user_address" => array(
+    "edit any user_address entities" => array(
       'title' => t('Edit any user addresses'),
     ),
-    "view own user_address" => array(
+    "view own user_address entities" => array(
       'title' => t('View own user addresses'),
     ),
-    "view any user_address" => array(
+    "view any user_address entities" => array(
       'title' => t('View any user addresses'),
     ),
   );
 
   return $permissions;
+}
+
+/**
+* Access callback for user_address entities.
+*/
+function user_address_access($op, $user_address, $account = NULL) {
+  global $user;
+
+  if (!isset($account)) {
+    $account = $user;
+  }
+  switch ($op) {
+    case 'create':
+      return user_access('administer example_task entities', $account)
+          || user_access('edit own user_address entities', $account);
+    case 'view':
+      return user_access('administer user_address entities', $account)
+          || user_access('view any user_address entities', $account)
+          || (user_access('view own user_address entities') && ($user_address->uid == $account->uid));
+    case 'edit':
+      return user_access('administer user_address entities')
+          || user_access('edit any user_address entities')
+          || (user_access('edit own user_address entities') && ($user_address->uid == $account->uid));
+  }
 }
 
 /**
@@ -351,7 +376,7 @@ function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
   if ($type == 'user_address' && $view_mode == 'user_addressbook') {
     $links = array();
     global $user;
-    if (user_access('edit own user_addressbook')) {
+    if (user_access('edit own user_address')) {
       /*
       static $record;
       if (empty($record) || $record->uid != $user->uid || $record->type != $entity->type) {
@@ -387,7 +412,7 @@ function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
         '#suffix' => ' | ',
       );
     }
-    if (user_access('edit own user_addressbook')) {
+    if (user_access('edit own user_address')) {
       $links['delete'] = array(
         '#theme' => 'link',
         '#text' => t('delete'),

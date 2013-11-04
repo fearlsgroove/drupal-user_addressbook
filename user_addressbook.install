@@ -113,8 +113,8 @@ function user_addressbook_schema() {
  */
 function user_addressbook_uninstall() {
   // Todo
-  // Loop over any remaining field instances attached to the every_field
-  // content type (such as the body field) and delete them individually.
+  // Loop over any remaining field instances attached to the user_address
+  // entity type and bundle and delete them individually.
   $params = array(
     'entity_type' => 'user_address',
     'bundle' => 'user_address',
@@ -123,14 +123,6 @@ function user_addressbook_uninstall() {
   variable_del('field_bundle_settings_user_address__user_address');
   foreach (field_read_instances($params, array('include_inactive' => TRUE)) as $instance) {
     $field_name = $instance['field_name'];
-    /*
-    // Set it to active via a query because field_update_field() does
-    // not work on inactive fields.
-    $updated = db_update('field_config')
-      ->fields(array('active' => 1))
-      ->condition('field_name', $field_name, '=')
-      ->execute();
-    */
     field_delete_instance($instance);
     // Now check to see if there are any other instances of the field left.
     $field = field_info_field($field_name);
@@ -139,6 +131,6 @@ function user_addressbook_uninstall() {
       field_delete_field($field_name);
     }
   }
-  // Purge all field infromation
+  // Purge all field information
   field_purge_batch(1000);
 }

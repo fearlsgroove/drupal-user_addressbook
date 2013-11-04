@@ -67,13 +67,24 @@ function user_addressbook_views_data() {
 
   // Expose the owner uid.
   $data['user_address']['uid'] = array(
-    'title' => t('Owner'),
-    'help' => t('Relate a profile to the user it belongs to.'),
+    'title' => t('Owner uid'),
+    'help' => t('The user who owns the address. If you need more fields than the uid add the content: owner relationship'),
     'relationship' => array(
+      'title' => t('Address owner'),
+      'help' => t('Relate address to the user who created it.'),
       'handler' => 'views_handler_relationship',
       'base' => 'users',
       'field' => 'uid',
-      'label' => t('Addressbook owner'),
+      'label' => t('owner'),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_user_name',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+    'field' => array(
+      'handler' => 'views_handler_field_user',
     ),
   );
 
