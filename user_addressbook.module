@@ -70,7 +70,7 @@ function user_addressbook_menu() {
     'page callback' => 'user_addressbook_page',
     'page arguments' => array(1),
     'access callback' => 'user_access',
-    'access arguments' => array('edit own user_addressbook'),
+    'access arguments' => array('edit own user_address'),
     'type' => MENU_LOCAL_TASK,
     //'file' => 'includes/user_addressbook.pages.inc',
     'weight' => 20,
@@ -89,7 +89,8 @@ function user_addressbook_menu() {
   $items['user/%user/addresses/address/%user_address'] = array(
     'page callback' => 'user_addressbook_adddress_view',
     'page arguments' => array(4),
-    'access arguments' => array('edit own user_addressbook'),
+    'access callback' => 'entity_access',
+    'access arguments' => array('view', 'user_address', 4),
     //'type' => MENU_CALLBACK,
     'file' => 'includes/user_addressbook.admin.inc',
   );
@@ -104,28 +105,31 @@ function user_addressbook_menu() {
     'title' => 'Edit',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_addressbook_address_form', 4),
-    'access arguments' => array('edit own user_addressbook'),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'user_address', 4),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/user_addressbook.admin.inc',
   );
-/*
-  $items['user/%user/addressbook/default/%user_addressbook'] = array(
-    'page callback' => 'user_addressbook_default',
-    'page arguments' => array(1, 5),
-    'access callback' => 'user_addressbook_access',
-    'access arguments' => array('update', 5),
-    'type' => MENU_CALLBACK,
+
+  $items['user/%user/addresses/address/%user_address/delete'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_addressbook_address_form', 4),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'user_address', 4),
+    'type' => MENU_LOCAL_TASK,
     'file' => 'includes/user_addressbook.admin.inc',
   );
-  $items['user/%user/addressbook/delete/%user_addressbook'] = array(
+
+  $items['user/%user/addresses/address/%user_address/default'] = array(
+    'title' => 'Edit',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_addressbook_profile_options_delete_form', 1, 5),
-    'access callback' => 'commerce_addressbook_profile_access',
-    'access arguments' => array('delete', 5),
-    'type' => MENU_CALLBACK,
-    'file' => 'includes/commerce_addressbook.pages.inc',
+    'page arguments' => array('user_addressbook_address_form', 4),
+    'access callback' => 'entity_access',
+    'access arguments' => array('edit', 'user_address', 4),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/user_addressbook.admin.inc',
   );
-*/
 
   return $items;
 }
@@ -135,17 +139,17 @@ function user_addressbook_menu() {
  */
 function user_addressbook_permission() {
   $permissions = array(
-    "edit own user_addressbook" => array(
-      'title' => t('Edit own addressbook'),
+    "edit own user_address" => array(
+      'title' => t('Edit own user addresses'),
     ),
-    "edit any user_addressbook" => array(
-      'title' => t('Edit any addressbook'),
+    "edit any user_address" => array(
+      'title' => t('Edit any user addresses'),
     ),
-    "view own user_addressbook" => array(
-      'title' => t('View own addressbook'),
+    "view own user_address" => array(
+      'title' => t('View own user addresses'),
     ),
-    "view any user_addressbook" => array(
-      'title' => t('View any addressbook'),
+    "view any user_address" => array(
+      'title' => t('View any user addresses'),
     ),
   );
 
@@ -258,7 +262,9 @@ function user_addressbook_enable() {
 function user_addressbook_entity_configure() {
   // Define an addressfield for the user_address entities.
   $field_name = 'user_addressbook_address';
+  field_cache_clear();
   $field = field_info_field($field_name);
+
 
   $instance = field_info_instance('user_address', $field_name, 'user_address');
   if (empty($field)) {
