@@ -39,6 +39,6 @@ class user_addressbook_handler_field_user_address_link extends views_handler_fie
     $address_id = $this->get_value($values, 'address_id');
     $uid = $this->get_value($values, 'uid');
 
-    return l($text, 'user/' . $uid . '/addresses/address/' . $address_id);
+    return l($text, 'user/' . $uid . '/addresses/view/' . $address_id);
   }
 }

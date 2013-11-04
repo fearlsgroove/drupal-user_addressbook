@@ -89,3 +89,76 @@ function user_addressbook_address_form_submit($form, &$form_state) {
 
   drupal_set_message(t('The changes have been saved.'));
 }
+
+/**
+ * Page callback for deleting a customer profile.
+ *
+ * @see confirm_form()
+ * @see commerce_addressbook_profile_options_delete_form_submit()
+ */
+function user_addressbook_address_options_delete_form($form, &$form_state, $account, $user_address) {
+
+  $form_state['user_address'] = $user_address;
+
+  $content = entity_view('user_address', array($user_address->address_id => $user_address));
+
+  $form = confirm_form($form,
+    t('Are you sure you want to delete this address?'),
+    'user/' . $account->uid . '/addresses/',
+    drupal_render($content) . '<p>' . t('Deleting this address cannot be undone.') . '</p>',
+    t('Delete'),
+    t('Cancel'),
+    'confirm'
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for commerce_addressbook_profile_options_delete_form.
+ *
+ * Deletes the customer profile if possible (when it's not referenced by any
+ * orders), disables it otherwise.
+ */
+function user_addressbook_address_options_delete_form_submit($form, &$form_state) {
+  $user_address = $form_state['user_address'];
+  entity_delete('user_address', $user_address->address_id);
+  db_delete('user_address_defaults')
+    ->condition('address_id', $user_address->address_id)
+    ->execute();
+  $form_state['redirect'] = 'user/' . $user_address->uid . '/addresses/';
+}
+
+/**
+ * Page callback for setting a customer profile as default.
+ * Used for both ajax and non-ajax delivery of the customer profile updates.
+ */
+function user_addressbook_address_options_default($account, $user_address, $type = 'ajax') {
+  // Check if the user already has defaults addresses to know which
+  // ajax command we should use.
+  //$defaults_view = commerce_addressbook_retrieve_view('commerce_addressbook_defaults', 'default', array($account->uid, $customer_profile->type));
+  user_addressbook_set_default_address($user_address);
+  /*
+  if ($type == 'ajax') {
+    $commands = array();
+    $list_view = commerce_addressbook_retrieve_view('commerce_addressbook', 'default', array($account->uid, $customer_profile->type));
+    $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-list', '<div id="commerce-addressbook-' . $customer_profile->type . '-list">' . $list_view->render() . '</div>');
+    $defaults_html = '<div id="commerce-addressbook-' . $customer_profile->type . '-default">' . views_embed_view('commerce_addressbook_defaults', 'default', $account->uid, $customer_profile->type) . '</div>';
+    if (empty($defaults_view->result)) {
+      if (empty($list_view->result)) {
+        $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-list', $defaults_html);
+      }
+      else {
+        $commands[] = ajax_command_after('#commerce-addressbook-' . $customer_profile->type . '-list', $defaults_html);
+      }
+    }
+    else {
+      $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-default', $defaults_html);
+    }
+    ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
+  }
+  else {
+  */
+    drupal_goto('user/' . $account->uid . '/addresses');
+  //}
+}

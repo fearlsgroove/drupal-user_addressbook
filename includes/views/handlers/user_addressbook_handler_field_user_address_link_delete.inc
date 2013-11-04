@@ -17,6 +17,6 @@ class user_addressbook_handler_field_user_address_link_delete extends user_addre
 
     $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
 
-    return l($text, 'user/' . $user_address->uid . '/addresses/address/' . $user->address_id . '/delete', array('query' => drupal_get_destination()));
+    return l($text, 'user/' . $user_address->uid . '/addresses/delete/' . $user->address_id, array('query' => drupal_get_destination()));
   }
 }

@@ -15,6 +15,6 @@ class user_addressbook_handler_field_user_address_link_edit extends user_address
 
     $text = !empty($this->options['text']) ? $this->options['text'] : t('edit');
 
-    return l($text, 'user/' . $user_address->uid . '/addresses/address/' . $user_address->address_id . '/edit', array('query' => drupal_get_destination()));
+    return l($text, 'user/' . $user_address->uid . '/addresses/edit/' . $user_address->address_id, array('query' => drupal_get_destination()));
   }
 }
