@@ -78,6 +78,7 @@ function user_addressbook_commerce_commerce_checkout_page_info() {
   $checkout_pages['addresses'] = array(
     'title' => t('Addresses'),
     'weight' => 0,
+    'buttons' => FALSE,
   );
 
   return $checkout_pages;

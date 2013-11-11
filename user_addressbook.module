@@ -25,6 +25,7 @@ function user_addressbook_entity_info() {
           ),
         ),
       ),
+      'load hook' => 'user_address_load',
       'view modes' => array(
         'user_addressbook' => array(
           'label' => t('User addressbook'),
@@ -33,6 +34,7 @@ function user_addressbook_entity_info() {
       ),
       'access callback' => 'user_address_access',
       'view callback' => 'entity_metadata_view_single',
+      'metadata controller class' => '',
     ),
   );
   return $return;
@@ -594,6 +596,14 @@ function user_addressbook_field_handler_user_address_set_default_validate($eleme
  */
 function user_addressbook_ajax_form_refresh($form, &$form_state) {
   $form_wrapper = reset($form_state['triggering_element']['#array_parents']);
+  if (!empty($form_state['redirect'])) {
+    ctools_include('ajax');
+    ctools_add_js('ajax-responder');
+    $commands = array();
+    $commands[] = ctools_ajax_command_redirect($form_state['redirect']);
+    print ajax_render($commands);
+    exit;
+  }
   return $form[$form_wrapper];
 }
 

@@ -22,35 +22,49 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   $pane_form = array();
 
   $pane_id = $checkout_pane['pane_id'];
-  foreach (commerce_customer_profile_types() as $type => $profile) {
-    if ($profile['addressfield'] && $pane = reset(commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type)))) {
-      //
+  if (empty($form_state['customer_profiles_panes'])) {
+    foreach (commerce_customer_profile_types() as $type => $profile) {
+      // Only customer profiles with addressfield and checkout pane defined.
+      if ($profile['addressfield'] && $pane = reset(commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type)))) {
+        $panes[$type] = $pane;
+      }
+    }
+    uasort($panes, 'drupal_sort_weight');
+    $form_state['customer_profiles_panes'] = array_keys($panes);
+    if (!isset($form_state['customer_profiles_step'])) {
+      $form_state['customer_profiles_step'] = 0;
     }
   }
+  $type = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']];
+  $field_name = variable_get('commerce_customer_profile_' . $type . '_field', '');
+
+  // Find the referenced profile using the related reference field...
+  $wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $profile = NULL;
+
+  // If the associated order field has been set...
+  if ($field_name) {
+    $profile = $wrapper->{$field_name}->value();
+  }
+  else {
+    // Or try the association stored in the order's data array if no field is set.
+    if (!empty($order->data['profiles']['customer_profile_' . $type])) {
+      $profile = commerce_customer_profile_load($order->data['profiles']['customer_profile_' . $type]);
+    }
+  }
+
   $mode = 'select_address';
 
   // If an AJAX rebuild happened, we might have our data in form state
   if (!empty($form_state['pane_' . $pane_id])) {
-    $profile = $form_state['pane_' . $pane_id]['profile'];
     $mode = $form_state['pane_' . $pane_id]['mode'];
   }
 
   // No profile set yet. First see if one exists already.
   if (empty($profile)) {
-    $profile = commerce_single_address_active_profile_load($user->uid, $type);
-
-    if ($profile) {
-      // Incomplete profiles go into edit mode. Others into view mode.
-      //$mode = empty($profile->data['incomplete']) ? 'view' : 'edit';
-    }
-    else {
-      // No profiles found. Create a new one.
-      $profile = commerce_customer_profile_new($type, $order->uid);
-      //$mode = 'new';
-    }
+    $profile = commerce_customer_profile_new($type, $order->uid);
   }
   $wrapper_id = strtr($pane_id, '_', '-') . '-ajax-wrapper';
-
   // Remember the current profile and mode in form state.
   $form_state['pane_' . $checkout_pane['pane_id']] = array(
     'profile' => $profile,
@@ -67,7 +81,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
 
 
   // Get the view form in the pane.
-  $user_addresses_checkout = _user_addressbook_retrieve_view_form($pane_form, $form_state, 'user_addressbook_checkout', 'default', array($user->uid, $wrapper_id, $type));
+  $user_addresses_checkout = _user_addressbook_retrieve_view_form($pane_form, $form_state, 'user_addressbook_checkout', 'default', array($user->uid, $wrapper_id, $type, $order->order_id));
   $user_addresses_checkout['#profile_type'] = $type;
 
   unset($user_addresses_checkout['actions']);
@@ -146,6 +160,27 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
 /**
  * Submit callback for the "add new" button.
  */
+function user_addressbook_commerce_field_handler_checkout_select_user_address_submit($form, &$form_state) {
+  $pane_id = reset($form_state['triggering_element']['#array_parents']);
+  $user_address = user_address_load($form_state['triggering_element']['#name']);
+  dsm($form_state);
+  $customer_profile = $form_state['pane_' . $pane_id]['profile'];
+  $order = $form_state['order'];
+  // Use this event to do extra operations with Rules to the new account and/or order.
+  rules_invoke_all('user_addressbook_commerce_user_address_select', $user_address, $customer_profile, $order);
+  // Next profile
+  $form_state['customer_profiles_step']++;
+  // Redirect to the next checkout step.
+  if (empty($form_state['customer_profiles_panes'][$form_state['customer_profiles_step']])) {
+    $order = commerce_order_status_update($form_state['order'], 'checkout_' . $form_state['checkout_page']['next_page'], FALSE, NULL, t('Customer continued to the next checkout page via a submit button.'));
+    $form_state['redirect'] = 'checkout/' . $order->order_id . '/' . $form_state['checkout_page']['next_page'];
+  }
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit callback for the "add new" button.
+ */
 function user_addressbook_commerce_checkout_pane_add_new_customer_profile($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#parents']);
   $form_state['pane_' . $pane_id]['mode'] = 'new_customer_profile';
@@ -199,6 +234,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form_validate($form, &
  * Checkout pane callback: submits a customer profile edit form.
  */
 function user_addressbook_commerce_checkout_pane_checkout_form_submit($form, &$form_state, $checkout_pane, $order) {
+  /*
   $pane_id = $checkout_pane['pane_id'];
   $field_name = variable_get('commerce_' . $pane_id . '_field', '');
   // The specified profile reference field doesn't exist on this order type.
@@ -240,6 +276,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form_submit($form, &$f
     // Or make the association in the order's data array if no field was found.
     $order->data['profiles'][$checkout_pane['pane_id']] = $profile->profile_id;
   }
+  */
 }
 
 /**

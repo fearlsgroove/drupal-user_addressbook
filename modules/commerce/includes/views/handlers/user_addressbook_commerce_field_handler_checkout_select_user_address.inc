@@ -43,17 +43,28 @@ class user_addressbook_commerce_field_handler_checkout_select_user_address exten
     foreach($this->view->result as $row_index => $row) {
       $uid = $row->{$this->aliases['uid']};
       $user_default_address = user_addressbook_get_default_addresses($uid, $this->view->args[1]);
+      //dsm($this->view);
+      $order = commerce_order_load($this->view->args[3]);
+      $form[$this->options['id']][$row_index] = array(
+        '#type' => 'container',
+        '#tree' => TRUE,
+      );
+      $form[$this->options['id']][$row_index]['value'] = array(
+        '#type' => 'value',
+        '#value' => $row->{$this->aliases['address_id']},
+      );
       // Add a text field to the form.  This array convention
       // corresponds to the placeholder HTML comment syntax.
-      $form[$this->options['id']][$row_index] = array(
-        '#type' => 'submit',
+      $form[$this->options['id']][$row_index]['select_button'] = array(
+        '#type' => 'button',
         '#return_value' => $row->{$this->aliases['address_id']},
         '#disabled' => ($user_default_address == $row->{$this->aliases['address_id']}),
         '#value' => t('Select'),
-        '#default_value' => ($user_default_address == $row->{$this->aliases['address_id']}) ? TRUE : FALSE,
+        '#executes_submit_callback' => TRUE,
+        '#name' => $row->{$this->aliases['address_id']},
         '#submit' => array('user_addressbook_commerce_field_handler_checkout_select_user_address_submit'),
         '#ajax' => array(
-          'callback' => 'user_addressbook_commerce_checkout_pane_refresh',
+          'callback' => 'user_addressbook_ajax_form_refresh',
           'wrapper' => 'user-addressbook-ajax-wrapper',
         ),
       );
