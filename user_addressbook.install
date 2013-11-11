@@ -87,6 +87,13 @@ function user_addressbook_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'type' => array(
+        'description' => 'The address type (default is not specified).',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
     ),
     'primary key' => array('uad_id'),
     'foreign keys' => array(

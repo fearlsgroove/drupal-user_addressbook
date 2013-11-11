@@ -279,5 +279,13 @@ function user_addressbook_views_data() {
     ),
   );
 
+  $data['user_address']['user_address_set_default'] = array(
+    'title' => t('Set default address'),
+    'help' => t('Set the current address as default.'),
+    'field' => array(
+      'handler' => 'user_addressbook_field_handler_user_address_set_default',
+    ),
+  );
+
   return $data;
 }

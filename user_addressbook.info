@@ -17,3 +17,4 @@ files[] = includes/views/handlers/user_addressbook_handler_field_user_address_li
 files[] = includes/views/handlers/user_addressbook_handler_field_user_address_link_delete.inc
 files[] = includes/views/handlers/user_addressbook_handler_field_user_address_link_edit.inc
 files[] = includes/views/handlers/user_addressbook_handler_area_empty_text.inc
+files[] = includes/views/handlers/user_addressbook_field_handler_user_address_set_default.inc

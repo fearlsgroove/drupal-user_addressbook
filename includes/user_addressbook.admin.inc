@@ -133,32 +133,20 @@ function user_addressbook_address_options_delete_form_submit($form, &$form_state
  * Page callback for setting a customer profile as default.
  * Used for both ajax and non-ajax delivery of the customer profile updates.
  */
-function user_addressbook_address_options_default($account, $user_address, $type = 'ajax') {
+function user_addressbook_address_options_default($account, $user_address, $type, $js = 'ajax', $replace_id = 'default') {
   // Check if the user already has defaults addresses to know which
   // ajax command we should use.
-  //$defaults_view = commerce_addressbook_retrieve_view('commerce_addressbook_defaults', 'default', array($account->uid, $customer_profile->type));
-  user_addressbook_set_default_address($user_address);
-  /*
-  if ($type == 'ajax') {
+  user_addressbook_set_default_address($user_address, $type);
+  if ($js == 'ajax') {
     $commands = array();
-    $list_view = commerce_addressbook_retrieve_view('commerce_addressbook', 'default', array($account->uid, $customer_profile->type));
-    $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-list', '<div id="commerce-addressbook-' . $customer_profile->type . '-list">' . $list_view->render() . '</div>');
-    $defaults_html = '<div id="commerce-addressbook-' . $customer_profile->type . '-default">' . views_embed_view('commerce_addressbook_defaults', 'default', $account->uid, $customer_profile->type) . '</div>';
-    if (empty($defaults_view->result)) {
-      if (empty($list_view->result)) {
-        $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-list', $defaults_html);
-      }
-      else {
-        $commands[] = ajax_command_after('#commerce-addressbook-' . $customer_profile->type . '-list', $defaults_html);
-      }
-    }
-    else {
-      $commands[] = ajax_command_replace('#commerce-addressbook-' . $customer_profile->type . '-default', $defaults_html);
-    }
+    $replace_html = '<div id="user-addressbook-' . $replace_id . '">' . views_embed_view('user_addressbook', 'default', $account->uid) . '</div>';
+    $replace_html = '<div id="user-addressbook-wrapper">' . views_embed_view('user_addressbook', 'default', $account->uid) . '</div>';
+    //$commands[] = ajax_command_replace('#user-addressbook-' . $replace_id, $replace_html);
+    $commands[] = ajax_command_replace('#user-addressbook-wrapper', $replace_html);
+    //$commands[] = ajax_command_replace(NULL, $replace_html);
     ajax_deliver(array('#type' => 'ajax', '#commands' => $commands));
   }
   else {
-  */
     drupal_goto('user/' . $account->uid . '/addresses');
-  //}
+  }
 }

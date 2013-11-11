@@ -6,9 +6,10 @@
 function user_addressbook_entity_info() {
   $return = array(
     'user_address' => array(
-      'label' => t('User'),
+      'label' => t('User address'),
       'base table' => 'user_address',
       'uri callback' => 'user_addressbook_uri',
+      'entity class' => 'Entity',
       'controller class' => 'UserAddressEntityController',
       'fieldable' => TRUE,
       'entity keys' => array(
@@ -30,7 +31,8 @@ function user_addressbook_entity_info() {
           'custom settings' => FALSE,
         ),
       ),
-      'access callback' => 'user_address_access', 
+      'access callback' => 'user_address_access',
+      'view callback' => 'entity_metadata_view_single',
     ),
   );
   return $return;
@@ -71,7 +73,7 @@ function user_addressbook_menu() {
     'page callback' => 'user_addressbook_page',
     'page arguments' => array(1),
     'access callback' => 'user_access',
-    'access arguments' => array('edit own user_address'),
+    'access arguments' => array('edit own user_address entities'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 20,
   );
@@ -80,7 +82,7 @@ function user_addressbook_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_addressbook_address_form'),
     'access callback' => 'user_access',
-    'access arguments' => array('edit own user_address'),
+    'access arguments' => array('edit own user_address entities'),
     'title' => 'Add an address',
     'type' => MENU_LOCAL_ACTION,
     'file' => 'includes/user_addressbook.admin.inc',
@@ -88,7 +90,7 @@ function user_addressbook_menu() {
 
   $items['user/%user/addresses/view/%user_address'] = array(
     'title' => 'View',
-    'page callback' => 'user_addressbook_adddress_view',
+    'page callback' => 'user_address_view',
     'page arguments' => array(4),
     'access callback' => 'entity_access',
     'access arguments' => array('view', 'user_address', 4),
@@ -172,7 +174,7 @@ function user_address_access($op, $user_address, $account = NULL) {
   }
   switch ($op) {
     case 'create':
-      return user_access('administer example_task entities', $account)
+      return user_access('administer user_address entities', $account)
           || user_access('edit own user_address entities', $account);
     case 'view':
       return user_access('administer user_address entities', $account)
@@ -343,11 +345,29 @@ function user_addressbook_entity_configure() {
  * This is replaced by User addressbook Views Page.
  */
 function user_addressbook_page($account) {
-  $output = '';
-  $user_addresses = user_addresses_load_by_user($account);
-  $output = entity_view('user_address', $user_addresses);
+  //$form = '';
+  //$form = _user_addressbook_retrieve_view_form(array(), array(), 'user_addressbook', 'default', array($user->uid, 'user-addressbook-wrapper'));
+  //$output .= '<div id="user-addressbook-wrapper">' . views_embed_view('user_addressbook', 'default', $account->uid) . '</div>';
+  $output = drupal_get_form('user_addressbook_page_form', $account);
 
   return $output;
+}
+
+/**
+ * Page callback for listing user addresses.
+ *
+ * This is replaced by User addressbook Views Page.
+ */
+function user_addressbook_page_form($form, &$form_state, $account) {
+  $form['user_addresses'] = array(
+    '#type' => 'container',
+    '#prefix' => '<div id="user-addressbook-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  $form['user_addresses'] += _user_addressbook_retrieve_view_form($form['user_addresses'], $form_state, 'user_addressbook', 'default', array($account->uid, 'user-addressbook-wrapper'));
+
+  return $form;
 }
 
 /**
@@ -356,8 +376,8 @@ function user_addressbook_page($account) {
  * Embeds a view that shows the current default profile, and a view that shows
  * all other profiles of the same type.
  */
-function user_addressbook_adddress_view($user_address) {
-  return entity_view('user_address', array($user_address));
+function user_address_view($user_address, $view_mode = 'user_addressbook') {
+  return $user_address->view($view_mode);
 }
 
 /**
@@ -369,28 +389,26 @@ function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
   if ($type == 'user_address' && $view_mode == 'user_addressbook') {
     $links = array();
     global $user;
-    if (user_access('edit own user_address')) {
-      static $record;
-      if (empty($record) || $record->uid != $user->uid) {
-        $query = db_select('user_address_defaults', 'uad')
-          ->fields('uad')
-          ->condition('uid', $user->uid)
-          ->execute();
-        $record = $query->fetchObject();
+    if (user_access('edit own user_address entities')) {
+      /*
+      $user_address_types = user_addressbook_address_types();
+      drupal_add_library('system', 'drupal.ajax');
+      foreach ($user_address_types as $type => $user_address_type) {
+        $default = user_addressbook_get_default_addresses($entity->uid, $type);
+        if (empty($default) || ($default != $entity->address_id)) {
+          $links['default_' . $type] = array(
+            '#theme' => 'link',
+            '#text' => t('Set as %type_name default address', array('%type_name' => $user_address_type['title'])),
+            '#path' => 'user/' . $entity->uid . '/addresses/default/' . $entity->address_id . '/' . $type . '/nojs',
+            '#options' => array(
+              'attributes' => array('class' => array('use-ajax')),
+              'html' => TRUE,
+             ),
+            '#suffix' => ' | ',
+          );
+        }
       }
-      //drupal_add_library('system', 'drupal.ajax');
-      if (empty($record) || ($record->address_id != $entity->address_id)) {
-        $links['default'] = array(
-          '#theme' => 'link',
-          '#text' => t('set as default'),
-          '#path' => 'user/' . $entity->uid . '/addresses/default/' . $entity->address_id . '/nojs',
-          '#options' => array(
-            'attributes' => array('class' => array('use-ajax')),
-            'html' => FALSE,
-           ),
-          '#suffix' => ' | ',
-        );
-      }
+      */
       $links['edit'] = array(
         '#theme' => 'link',
         '#text' => t('edit'),
@@ -401,8 +419,7 @@ function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
          ),
         '#suffix' => ' | ',
       );
-    }
-    if (user_access('edit own user_address')) {
+
       $links['delete'] = array(
         '#theme' => 'link',
         '#text' => t('delete'),
@@ -435,14 +452,179 @@ function user_addressbook_new($uid = 0) {
 }
 
 /**
+ * Implements hook_entity_insert().
+ *
+ * Set the new user_address as default if there's none.
+ */
+function user_addressbook_entity_insert($user_address) {
+  if (!empty($user_address->address_id)) {
+      // Check if there are default addreses defined.
+      $default_addresses = user_addressbook_get_default_addresses($user_address->uid);
+      if (empty($default_addresses)) {
+        $user_address_types = user_addressbook_address_types();
+        foreach ($user_address_types as $type => $user_address_type) {
+          user_addressbook_set_default_address($user_address, $type);
+        }
+      }
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * Delete the customer profile entry from commerce_addressbook_defaults table,
+ * set a new default customer profile for this type.
+ */
+function user_addressbook_entity_delete($user_address) {
+  // Update the default addresses if the deleted addresses was set as default.
+  // Use latest one address.
+  $record = db_select('user_address_defaults', 'uad')
+    ->fields('uad')
+    ->condition('address_id', $user_address->address_id)
+    ->execute();
+  if ($record->rowCount() > 0) {
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'user_address')
+      ->propertyCondition('uid', $user_address->uid)
+      ->propertyOrderBy('address_id', 'DESC')
+      ->range(0, 1);
+    $results = $query->execute();
+    if (!empty($results['user_address'])) {
+      $new_user_address = user_address_load(key($results['user_address']));
+      while ($default_address_entry = $record->fetchAssoc()) {
+        $query = new EntityFieldQuery();
+        user_addressbook_set_default_address($new_user_address, $default_address_entry['type']);
+      }
+    }
+  }
+  // Delete the old ones if any.
+  db_delete('user_address_defaults')
+    ->condition('address_id', $user_address->address_id)
+    ->execute();
+}
+
+/**
  * Find an existing default address for a given user and
  * update it to a new address, or set it if a default is not already set.
  */
-function user_addressbook_set_default_address($user_address) {
+function user_addressbook_address_types() {
+  // First check the static cache for an address types.
+  $user_address_types = &drupal_static(__FUNCTION__);
+  // If it did not exist, fetch the types now.
+  if (empty($user_address_types)) {
+    $user_address_types = module_invoke_all('user_addressbook_address_type_info');
+    if (!empty($user_address_types)) {
+      // Give other modules a chance to alter the order states.
+      drupal_alter('user_addressbook_address_type_info_alter', $user_address_types);
+      uasort($user_address_types, 'drupal_sort_weight');
+    }
+    else {
+      $user_address_types['default'] = array(
+        'type' => 'default',
+        'title' => t('Default'),
+      );
+    }
+  }
+
+  return $user_address_types;
+}
+
+/**
+ * Find an existing default address for a given user and
+ * update it to a new address, or set it if a default is not already set.
+ */
+function user_addressbook_set_default_address($user_address, $type = 'default') {
   db_merge('user_address_defaults')
     ->key(array(
       'uid' => $user_address->uid,
+      'type' => $type,
     ))
     ->fields(array('address_id' => $user_address->address_id))
     ->execute();
+}
+
+/**
+ * Returns the default profile id for a specific uid and profile type.
+ *
+ * @param $uid
+ *   The uid of the user whose default profile id should be returned.
+ * @param $type
+ *   The type of customer profile to look up.
+ *
+ * @return
+ *  The id of the default profile if set, FALSE otherwise.
+ */
+function user_addressbook_get_default_addresses($uid, $type = NULL) {
+  $users_default_addresses = &drupal_static(__FUNCTION__, array());
+  if (!isset($users_default_addresses[$uid])) {
+    $result = db_select('user_address_defaults', 'uad')
+      ->fields('uad', array('address_id', 'type'))
+      ->condition('uid', $uid)
+      ->execute();
+    while ($record = $result->fetchAssoc()) {
+      $users_default_addresses[$uid][$record['type']] = $record['address_id'];
+    }
+  }
+  if ($type) {
+    return isset($users_default_addresses[$uid][$type]) ? $users_default_addresses[$uid][$type] : FALSE;
+  }
+  else {
+    return isset($users_default_addresses[$uid]) ? $users_default_addresses[$uid] : FALSE;
+  }
+}
+
+/**
+ * Validation after set default address is checked.
+ *
+ * Rebuild the form with default address changed.
+ */
+function user_addressbook_field_handler_user_address_set_default_validate($element, &$form_state, &$form) {
+  if($element['#value'] === $element['#return_value']) {
+    list($address_id, $type) = explode('-', $element['#return_value']);
+    $user_address = user_address_load($address_id);
+    $view_form_parents = array_slice($element['#parents'], 0, -2);
+    $view_form = drupal_array_get_nested_value($form, $view_form_parents);
+    user_addressbook_set_default_address($user_address, $type);
+    $form_state['rebuild'] = TRUE;
+  }
+}
+
+/**
+ * Ajax callback for the "edit" button.
+ */
+function user_addressbook_ajax_form_refresh($form, &$form_state) {
+  $form_wrapper = reset($form_state['triggering_element']['#array_parents']);
+  return $form[$form_wrapper];
+}
+
+/**
+ * Helper function.
+ *
+ * Returns a form of a given View for inclusion in another form (given).
+ */
+function _user_addressbook_retrieve_view_form($form, &$form_state, $view_id, $display_id, $arguments = array(), $override_url = NULL) {
+  $view = views_get_view($view_id);
+  $view->set_display($display_id);
+
+  // Set the specific arguments passed in.
+  $view->set_arguments($arguments);
+
+  // Override the view url, if an override was provided.
+  if (!empty($override_url)) {
+    $view->override_url = $override_url;
+  }
+
+  // Prepare and execute the View query.
+  $view->pre_execute();
+  $view->execute();
+  // Output of the view, needed for building the view form.
+  $view->preview();
+  $output = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
+
+  // Get the view form in the pane.
+  $view_form = views_form($form, $form_state, $view, $output);
+  $view_form['#view'] = $view;
+  unset($view_form['actions']);
+
+  return $view_form;
 }
