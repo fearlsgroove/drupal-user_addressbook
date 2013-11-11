@@ -9,4 +9,4 @@ dependencies[] = commerce_customer
 dependencies[] = user_addressbook
 
 ; Views handlers
-files[] = includes/views/handlers/user_addressbook_field_handler_user_address_commerce_checkout_select.inc
+files[] = includes/views/handlers/user_addressbook_commerce_field_handler_checkout_select_user_address.inc

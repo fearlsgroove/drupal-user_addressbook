@@ -6,7 +6,7 @@
  * A Views' field handler for editing a node title.
  *
  */
-class user_addressbook_field_handler_user_address_commerce_checkout_select extends views_handler_field {
+class user_addressbook_commerce_field_handler_checkout_select_user_address extends views_handler_field {
 
   function construct() {
     parent::construct();
@@ -46,12 +46,12 @@ class user_addressbook_field_handler_user_address_commerce_checkout_select exten
       // Add a text field to the form.  This array convention
       // corresponds to the placeholder HTML comment syntax.
       $form[$this->options['id']][$row_index] = array(
-        '#type' => 'checkbox',
+        '#type' => 'submit',
         '#return_value' => $row->{$this->aliases['address_id']},
         '#disabled' => ($user_default_address == $row->{$this->aliases['address_id']}),
-        '#title' => $this->options['label'] ? $this->options['label'] : $this->definition['title'],
+        '#value' => t('Select'),
         '#default_value' => ($user_default_address == $row->{$this->aliases['address_id']}) ? TRUE : FALSE,
-        '#element_validate' => array('user_addressbook_field_handler_commerce_checkout_default_address_validate'),
+        '#submit' => array('user_addressbook_commerce_field_handler_checkout_select_user_address_submit'),
         '#ajax' => array(
           'callback' => 'user_addressbook_commerce_checkout_pane_refresh',
           'wrapper' => 'user-addressbook-ajax-wrapper',

@@ -15,7 +15,18 @@ function user_addressbook_commerce_entity_info_alter(&$info) {
  */
 function user_addressbook_commerce_menu() {
   $items = array();
-
+/*
+  $items['user/checkout-addresses'] = array(
+    'title' => t('Addresses'),
+    'page callback' => 'user_addressbook_commerce_checkout_addresses',
+    'page arguments' => array(1, 4),
+    'access callback' => 'user_access',
+    'access arguments' => array('edit own user_address entities'),
+    'type' => MENU_CALLBACK,
+    //'file' => 'includes/user_addressbook.admin.inc',
+    'weight' => 40,
+  );
+*/
   return $items;
 }
 
