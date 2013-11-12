@@ -67,10 +67,18 @@ function user_addressbook_commerce_commerce_checkout_page_info() {
   $checkout_pages['addresses'] = array(
     'title' => t('Addresses'),
     'weight' => 0,
-    'buttons' => FALSE,
   );
 
   return $checkout_pages;
+}
+
+/**
+ * Implements hook_commerce_checkout_page_info_alter().
+ */
+function user_addressbook_commerce_commerce_checkout_page_info_alter(&$checkout_pages) {
+  if (user_access('edit own user_address entities')) {
+    $checkout_pages['addresses']['buttons'] = FALSE;
+  }
 }
 
 /**
@@ -97,12 +105,20 @@ function user_addressbook_commerce_commerce_checkout_pane_info() {
  */
 function user_addressbook_commerce_commerce_checkout_pane_info_alter(&$checkout_panes) {
   // Extract the View and display keys from the cart contents pane setting.
-  if (user_access('edit own user_address entities')) {
-    foreach (commerce_customer_profile_types() as $type => $profile_type) {
-      if ($profile_type['addressfield'] || isset($checkout_panes['customer_profile_' . $type])) {
+  foreach (commerce_customer_profile_types() as $type => $profile_type) {
+    if ($profile_type['addressfield'] && isset($checkout_panes['customer_profile_' . $type])) {
+      if (user_access('edit own user_address entities')) {
         $checkout_panes['customer_profile_' . $type]['enabled'] = FALSE;
         $checkout_panes['customer_profile_' . $type]['page'] = 'disabled';
       }
+      else {
+        $checkout_panes['customer_profile_' . $type]['enabled'] = TRUE;
+        $checkout_panes['customer_profile_' . $type]['page'] = 'addresses';
+      }
     }
+  }
+  if (!user_access('edit own user_address entities')) {
+    $checkout_panes['user_addressbook']['enabled'] = FALSE;
+    $checkout_panes['user_addressbook']['page'] = 'disabled';
   }
 }
