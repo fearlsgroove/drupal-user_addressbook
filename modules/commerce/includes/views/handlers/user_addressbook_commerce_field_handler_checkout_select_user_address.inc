@@ -43,7 +43,6 @@ class user_addressbook_commerce_field_handler_checkout_select_user_address exten
     foreach($this->view->result as $row_index => $row) {
       $uid = $row->{$this->aliases['uid']};
       $user_default_address = user_addressbook_get_default_addresses($uid, $this->view->args[1]);
-      //dsm($this->view);
       $order = commerce_order_load($this->view->args[3]);
       $form[$this->options['id']][$row_index] = array(
         '#type' => 'container',
