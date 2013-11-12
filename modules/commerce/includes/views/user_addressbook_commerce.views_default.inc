@@ -56,6 +56,12 @@ function user_addressbook_commerce_views_default_views() {
   $handler->display->display_options['fields']['user_address_set_default']['field'] = 'user_address_set_default';
   $handler->display->display_options['fields']['user_address_set_default']['label'] = '';
   $handler->display->display_options['fields']['user_address_set_default']['element_label_colon'] = FALSE;
+  /* Field: User addresses: Checkout select user address button */
+  $handler->display->display_options['fields']['user_address_commerce_checkout_select_user_address']['id'] = 'user_address_commerce_checkout_select_user_address';
+  $handler->display->display_options['fields']['user_address_commerce_checkout_select_user_address']['table'] = 'user_address';
+  $handler->display->display_options['fields']['user_address_commerce_checkout_select_user_address']['field'] = 'user_address_commerce_checkout_select_user_address';
+  $handler->display->display_options['fields']['user_address_commerce_checkout_select_user_address']['label'] = '';
+  $handler->display->display_options['fields']['user_address_commerce_checkout_select_user_address']['element_label_colon'] = FALSE;
   /* Contextual filter: User addresses: Owner uid */
   $handler->display->display_options['arguments']['uid']['id'] = 'uid';
   $handler->display->display_options['arguments']['uid']['table'] = 'user_address';

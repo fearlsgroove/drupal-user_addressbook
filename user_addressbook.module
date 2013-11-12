@@ -477,32 +477,35 @@ function user_addressbook_entity_insert($user_address) {
  * Delete the customer profile entry from commerce_addressbook_defaults table,
  * set a new default customer profile for this type.
  */
-function user_addressbook_entity_delete($user_address) {
-  // Update the default addresses if the deleted addresses was set as default.
-  // Use latest one address.
-  $record = db_select('user_address_defaults', 'uad')
-    ->fields('uad')
-    ->condition('address_id', $user_address->address_id)
-    ->execute();
-  if ($record->rowCount() > 0) {
-    $query = new EntityFieldQuery();
-    $query->entityCondition('entity_type', 'user_address')
-      ->propertyCondition('uid', $user_address->uid)
-      ->propertyOrderBy('address_id', 'DESC')
-      ->range(0, 1);
-    $results = $query->execute();
-    if (!empty($results['user_address'])) {
-      $new_user_address = user_address_load(key($results['user_address']));
-      while ($default_address_entry = $record->fetchAssoc()) {
-        $query = new EntityFieldQuery();
-        user_addressbook_set_default_address($new_user_address, $default_address_entry['type']);
+function user_addressbook_entity_delete($entity, $type) {
+  if ($type == 'user_address') {
+    $user_address = $entity;
+    // Update the default addresses if the deleted addresses was set as default.
+    // Use latest one address.
+    $record = db_select('user_address_defaults', 'uad')
+      ->fields('uad')
+      ->condition('address_id', $user_address->address_id)
+      ->execute();
+    if ($record->rowCount() > 0) {
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'user_address')
+        ->propertyCondition('uid', $user_address->uid)
+        ->propertyOrderBy('address_id', 'DESC')
+        ->range(0, 1);
+      $results = $query->execute();
+      if (!empty($results['user_address'])) {
+        $new_user_address = user_address_load(key($results['user_address']));
+        while ($default_address_entry = $record->fetchAssoc()) {
+          $query = new EntityFieldQuery();
+          user_addressbook_set_default_address($new_user_address, $default_address_entry['type']);
+        }
       }
     }
+    // Delete the old ones if any.
+    db_delete('user_address_defaults')
+      ->condition('address_id', $user_address->address_id)
+      ->execute();
   }
-  // Delete the old ones if any.
-  db_delete('user_address_defaults')
-    ->condition('address_id', $user_address->address_id)
-    ->execute();
 }
 
 /**
