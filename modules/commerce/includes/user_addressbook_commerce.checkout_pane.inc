@@ -315,6 +315,7 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel
  * Copied verbatim from commerce_customer_profile_pane_review.
  */
 function user_addressbook_commerce_checkout_pane_review($form, $form_state, $checkout_pane, $order) {
+  /*
   // Load the profile based on the related customer profile reference field...
   if ($field_name = variable_get('commerce_' . $checkout_pane['pane_id'] . '_field', '')) {
     $profile = entity_metadata_wrapper('commerce_order', $order)->{$field_name}->value();
@@ -332,4 +333,5 @@ function user_addressbook_commerce_checkout_pane_review($form, $form_state, $che
   else {
     return t('No information');
   }
+  */
 }
