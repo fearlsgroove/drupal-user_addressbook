@@ -23,14 +23,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
 
   $pane_id = $checkout_pane['pane_id'];
   if (empty($form_state['customer_profiles_panes'])) {
-    foreach (commerce_customer_profile_types() as $type => $profile) {
-      // Only customer profiles with addressfield and checkout pane defined.
-      if ($profile['addressfield'] && $pane = reset(commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type)))) {
-        $panes[$type] = $pane;
-        $panes[$type]['type'] = $type;
-      }
-    }
-    uasort($panes, 'drupal_sort_weight');
+    $panes = user_addressbook_commerce_customer_profile_panes();
     $form_state['customer_profiles_panes'] = array_values($panes);
     if (!isset($form_state['customer_profiles_step'])) {
       $form_state['customer_profiles_step'] = 0;
@@ -309,29 +302,25 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel
 }
 
 /**
- * Checkout pane callback: returns the cart contents review data for the
+ * Checkout pane callback: returns the customer profiles review data for the
  *   Review checkout pane.
  *
- * Copied verbatim from commerce_customer_profile_pane_review.
+ * Use commerce_customer_profile_pane_review.
  */
 function user_addressbook_commerce_checkout_pane_review($form, $form_state, $checkout_pane, $order) {
-  /*
-  // Load the profile based on the related customer profile reference field...
-  if ($field_name = variable_get('commerce_' . $checkout_pane['pane_id'] . '_field', '')) {
-    $profile = entity_metadata_wrapper('commerce_order', $order)->{$field_name}->value();
-  }
-  else {
-    // Or use the association stored in the order's data array if no field is set.
-    $profile = commerce_customer_profile_load($order->data['profiles'][$checkout_pane['pane_id']]);
+  // Ensure this include file is loaded when the form is rebuilt from the cache.
+  module_load_include('inc', 'commerce_customer', 'includes/commerce_customer.checkout_pane');
+  $content = array();
+
+  $panes = user_addressbook_commerce_customer_profile_panes();
+  foreach ($panes as $type => $pane) {
+    $content['addresses'][$type] = array(
+      '#type' => 'item',
+      '#title' => $pane['title'],
+      '#id' => drupal_html_class($pane['pane_id']),
+      '#markup' => commerce_customer_profile_pane_review($form, $form_state, $pane, $order),
+    );
   }
 
-  if ($profile) {
-    $content = entity_view('commerce_customer_profile', array($profile->profile_id => $profile), 'customer');
-
-    return drupal_render($content);
-  }
-  else {
-    return t('No information');
-  }
-  */
+  return drupal_render($content);
 }

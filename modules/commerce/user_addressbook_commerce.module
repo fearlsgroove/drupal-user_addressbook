@@ -122,3 +122,20 @@ function user_addressbook_commerce_commerce_checkout_pane_info_alter(&$checkout_
     $checkout_panes['user_addressbook']['page'] = 'disabled';
   }
 }
+
+/**
+ * Helper function.
+ *
+ * Get the customer profiles panes, keeping the order from checkout settings.
+ */
+function user_addressbook_commerce_customer_profile_panes() {
+  foreach (commerce_customer_profile_types() as $type => $profile) {
+    // Only customer profiles with addressfield and checkout pane defined.
+    if ($profile['addressfield'] && $pane = reset(commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type)))) {
+      $panes[$type] = $pane;
+      $panes[$type]['type'] = $type;
+    }
+  }
+  uasort($panes, 'drupal_sort_weight');
+  return $panes;
+}
