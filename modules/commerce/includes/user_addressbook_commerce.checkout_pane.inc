@@ -56,7 +56,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   $user_addresses = user_addresses_load_by_user($order->uid);
   // Default form mode.
   $mode = 'select_address';
-  if (isset($order->data['addresses'][$type]) && $order->data['addresses'][$type] === FALSE) {
+  if (isset($order->data['addresses'][$type]) && $order->data['addresses'][$type] == 'edit') {
     $mode = 'edit_profile';
   }
   elseif (empty($user_addresses)) {
@@ -120,7 +120,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     );
   }
   // Get the User addressbook view form in the pane.
-  if (($mode == 'select_address' || $action == 'view_addressbook') && !empty($user_addresses)) {
+  if (($mode != 'edit_profile' || ($mode == 'edit_profile' && $action == 'view_addressbook')) && !empty($user_addresses)) {
     $user_addresses_checkout = _user_addressbook_retrieve_view_form($pane_form, $form_state, 'user_addressbook_checkout', 'default', array($user->uid, $wrapper_id, $type, $order->order_id));
     $user_addresses_checkout['#profile_type'] = $type;
 
@@ -264,6 +264,7 @@ function user_addressbook_commerce_field_handler_checkout_select_user_address_su
     $form_state['redirect'] = 'checkout/' . $order->order_id . '/' . $form_state['checkout_page']['next_page'];
   }
   else {
+    $form_state['pane_' . $pane_id]['mode'] = 'select_address';
     $form_state['pane_' . $pane_id]['action'] = 'select_address';
     $form_state['rebuild'] = TRUE;
   }
@@ -334,7 +335,7 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
     commerce_order_save($order);
   }
   else {
-    $order->data['addresses'][$customer_profile->type] = FALSE;
+    $order->data['addresses'][$customer_profile->type] = 'edit';
     commerce_order_save($order);
   }
   // Next profile
@@ -345,6 +346,7 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
     $form_state['redirect'] = 'checkout/' . $order->order_id . '/' . $form_state['checkout_page']['next_page'];
   }
   else {
+    $form_state['pane_' . $pane_id]['mode'] = 'select_address';
     $form_state['pane_' . $pane_id]['action'] = 'save_profile';
     $form_state['rebuild'] = TRUE;
   }
