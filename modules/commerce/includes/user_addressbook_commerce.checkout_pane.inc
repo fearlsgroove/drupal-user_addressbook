@@ -48,7 +48,10 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     }
   }
 
+  // Default form mode.
   $mode = 'select_address';
+  // Get the user addresses.
+  $user_addresses = user_addresses_load_by_user($order->uid);
 
   // If an AJAX rebuild happened, we might have our data in form state
   if (!empty($form_state['pane_' . $pane_id])) {
@@ -90,14 +93,16 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
 
 
   // Get the view form in the pane.
-  $user_addresses_checkout = _user_addressbook_retrieve_view_form($pane_form, $form_state, 'user_addressbook_checkout', 'default', array($user->uid, $wrapper_id, $type, $order->order_id));
-  $user_addresses_checkout['#profile_type'] = $type;
+  if (!empty($user_addresses)) {
+    $user_addresses_checkout = _user_addressbook_retrieve_view_form($pane_form, $form_state, 'user_addressbook_checkout', 'default', array($user->uid, $wrapper_id, $type, $order->order_id));
+    $user_addresses_checkout['#profile_type'] = $type;
 
-  unset($user_addresses_checkout['actions']);
-  $pane_form['user_addresses'] = $user_addresses_checkout;
-  $pane_form['user_addresses']['#weight'] = -100;
+    unset($user_addresses_checkout['actions']);
+    $pane_form['user_addresses'] = $user_addresses_checkout;
+    $pane_form['user_addresses']['#weight'] = -100;
+  }
 
-  if ($mode == 'select_address') {
+  if ($mode == 'select_address' || empty($user_addresses)) {
     $pane_form['customer_profile'] = array(
       '#type' => 'submit',
       '#value' => t('Add new'),
@@ -109,7 +114,8 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
       '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile'),
     );
   }
-  elseif ($mode == 'new_customer_profile') {
+
+  if ($mode == 'new_customer_profile' || empty($user_addresses)) {
     $new_profile = commerce_customer_profile_new($type, $order->uid);
     $profile = (object) array_intersect_key((array) $profile, (array) $new_profile);
 
@@ -151,6 +157,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
       '#title' => t('Save to my addressbook'),
       '#default_value' => TRUE,
     );
+
     $pane_form['user_address_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Address name') . ' ' . theme('form_required_marker', array()),
@@ -162,16 +169,19 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
         ),
       ),
     );
-    $pane_form['user_address_set_default'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Make default'),
-      '#states' => array(
-        // Hide the settings when the select checkbox is disabled.
-        'invisible' => array(
-         ':input[name="user_addressbook[add_to_user_addressbook]"]' => array('checked' => FALSE),
+
+    if (!empty($user_addresses)) {
+      $pane_form['user_address_set_default'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Make default'),
+        '#states' => array(
+          // Hide the settings when the select checkbox is disabled.
+          'invisible' => array(
+           ':input[name="user_addressbook[add_to_user_addressbook]"]' => array('checked' => FALSE),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     // Cancel add new customer profile.
     $pane_form['save'] = array(
@@ -184,18 +194,19 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
       ),
       '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile_save'),
     );
-    //$form['#validate'][] = 'user_addressbook_commerce_checkout_pane_checkout_form_validate';
-    // Cancel add new customer profile.
-    $pane_form['cancel'] = array(
-      '#type' => 'submit',
-      '#value' => t('Cancel'),
-      '#limit_validation_errors' => array(),
-      '#ajax' => array(
-        'callback' => 'user_addressbook_ajax_form_refresh',
-        'wrapper' => strtr($pane_id, '_', '-') . '-ajax-wrapper',
-      ),
-      '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel'),
-    );
+    if (!empty($user_addresses)) {
+      // Cancel add new customer profile.
+      $pane_form['cancel'] = array(
+        '#type' => 'submit',
+        '#value' => t('Cancel'),
+        '#limit_validation_errors' => array(),
+        '#ajax' => array(
+          'callback' => 'user_addressbook_ajax_form_refresh',
+          'wrapper' => strtr($pane_id, '_', '-') . '-ajax-wrapper',
+        ),
+        '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel'),
+      );
+    }
   }
 
   return $pane_form;
@@ -278,6 +289,10 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
     if (!empty($form_state['values'][$pane_id]['user_address_set_default'])) {
       user_addressbook_set_default_address($user_address, $customer_profile->type);
     }
+    $order->data['addresses'][$customer_profile->type] = $user->address;
+  }
+  else {
+    $order->data['addresses'][$customer_profile->type] = NULL;
   }
   // Next profile
   $form_state['customer_profiles_step']++;
