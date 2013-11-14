@@ -10,6 +10,56 @@
  */
 function user_addressbook_commerce_checkout_pane_settings_form($checkout_pane) {
   $form = array();
+  $customer_profile_panes = user_addressbook_commerce_customer_profile_panes();
+  $help_text_default = array(
+    'value' => '',
+    'format' => 'filtered_html',
+  );
+  foreach ($customer_profile_panes as $type => $customer_profile_pane) {
+    $form[$type] = array(
+      '#type' => 'fieldset',
+      '#title' => $customer_profile_pane['title'],
+    );
+    // Help text User addressbook pane.
+    $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $customer_profile_pane['title']);
+    $form[$type]['commerce_checkout_' . $type . '_user_addressbook_pane_title'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Custom pane title'),
+      '#default_value' => $user_addressbook_pane_title,
+    );
+    // Help text User addressbook pane.
+    $user_addressbook_help_text = variable_get('commerce_checkout_' . $type . '_user_addressbook_help_text', $help_text_default);
+    $form[$type]['commerce_checkout_' . $type . '_user_addressbook_help_text'] = array(
+      '#type' => 'text_format',
+      '#title' => t('Addresses help text'),
+      '#description' => t('The text will appear on top of User addressbook pane.'),
+      '#default_value' => $user_addressbook_help_text['value'],
+      '#format' => $user_addressbook_help_text['format'],
+    );
+    // Help text for add new customer profile form.
+    $add_new_customer_profile_help_text = variable_get('commerce_checkout_' . $type . '_add_new_customer_profile_help_text', $help_text_default);
+    $form[$type]['commerce_checkout_' . $type . '_add_new_customer_profile_help_text'] = array(
+      '#type' => 'text_format',
+      '#title' => t('Add new customer profile form help text'),
+      '#description' => t('The text will appear on top of Customer profile form.'),
+      '#default_value' => $add_new_customer_profile_help_text['value'],
+      '#format' => $add_new_customer_profile_help_text['format'],
+    );
+
+  }
+  $var_info = array(
+    'site' => array(
+      'type' => 'site',
+      'label' => t('Site information'),
+      'description' => t('Site-wide settings and other global information.'),
+    ),
+    'commerce_order' => array(
+      'label' => t('Order'),
+      'type' => 'commerce_order',
+    ),
+  );
+
+  $form['container']['commerce_checkout_completion_message_help'] = RulesTokenEvaluator::help($var_info);
 
   return $form;
 }
@@ -33,8 +83,9 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   if (!isset($order->data['addresses'])) {
     $order->data['addresses'] = array();
   }
-
-  $checkout_pane['title'] = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']]['title'];
+  $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']]['title']);
+  $user_addressbook_pane_title = commerce_i18n_string('commerce:checkout:addresses:commerce_checkout_' . $type . '_user_addressbook_pane_title', $user_addressbook_pane_title, array('sanitize' => FALSE));
+  $checkout_pane['title'] = $user_addressbook_pane_title;
   $field_name = variable_get('commerce_customer_profile_' . $type . '_field', '');
 
   // Find the referenced profile using the related reference field...
@@ -105,6 +156,25 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   // Ensure this include file is loaded when the form is rebuilt from the cache.
   $form_state['build_info']['files']['pane'] = drupal_get_path('module', 'user_addressbook_commerce') . '/includes/user_addressbook_commerce.checkout_pane.inc';
 
+  // Addresses help text.
+  $help_text_default = array(
+    'value' => '',
+    'format' => 'filtered_html',
+  );
+  $user_addressbook_help_text = variable_get('commerce_checkout_' . $type . '_user_addressbook_help_text', $help_text_default);
+  if (!empty($user_addressbook_help_text['value'])) {
+    // Perform translation.
+    $user_addressbook_help_text['value'] = commerce_i18n_string('commerce:checkout:addresses:commerce_checkout_' . $type . '_user_addressbook_help_text', $user_addressbook_help_text['value'], array('sanitize' => FALSE));
+    // Perform token replacement.
+    $user_addressbook_help_text['value'] = token_replace($user_addressbook_help_text['value'], array('commerce-order' => $order), array('clear' => TRUE));
+    // Apply the proper text format.
+    $user_addressbook_help_text['value'] = check_markup($user_addressbook_help_text['value'], $user_addressbook_help_text['format']);
+    $pane_form['user_addressbook_help_text'] = array(
+      '#markup' => '<div class="user-addressbook-help-text">' . $user_addressbook_help_text['value'] . '</div>',
+      '#weight' => -110,
+    );
+  }
+
   // View addressbook button, for edit customer profile case.
   if ($mode == 'edit_profile' && !empty($user_addresses) && $action != 'view_addressbook') {
     $pane_form['select_address'] = array(
@@ -146,6 +216,21 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     if ($mode == 'new_customer_profile') {
       $new_profile = commerce_customer_profile_new($type, $order->uid);
       $profile = (object) array_intersect_key((array) $profile, (array) $new_profile);
+    }
+
+    // Help text for add new customer profile form.
+    $add_new_customer_profile_help_text = variable_get('commerce_checkout_' . $type . '_add_new_customer_profile_help_text', $help_text_default);
+    if (!empty($add_new_customer_profile_help_text['value'])) {
+      // Perform translation.
+      $add_new_customer_profile_help_text['value'] = commerce_i18n_string('commerce:checkout:addresses:commerce_checkout_' . $type . '_add_new_customer_profile_help_text', $add_new_customer_profile_help_text['value'], array('sanitize' => FALSE));
+      // Perform token replacement.
+      $add_new_customer_profile_help_text['value'] = token_replace($add_new_customer_profile_help_text['value'], array('commerce-order' => $order), array('clear' => TRUE));
+      // Apply the proper text format.
+      $add_new_customer_profile_help_text['value'] = check_markup($add_new_customer_profile_help_text['value'], $add_new_customer_profile_help_text['format']);
+      $pane_form['add_new_customer_profile_help_text'] = array(
+        '#markup' => '<div class="add-new-customer-profile-help-text">' . $user_addressbook_help_text['value'] . '</div>',
+        '#weight' => -50,
+      );
     }
 
     $pane_form['customer_profile'] = array(

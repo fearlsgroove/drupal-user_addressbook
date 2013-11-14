@@ -139,3 +139,28 @@ function user_addressbook_commerce_customer_profile_panes() {
   uasort($panes, 'drupal_sort_weight');
   return $panes;
 }
+
+/**
+ * Implements hook_i18n_string_list().
+ */
+function user_addressbook_commerce_i18n_string_list($group) {
+  if ($group == 'commerce') {
+    // Allow the checkout completion message to be translated.
+    $help_text_default = array(
+      'value' => '',
+      'format' => 'filtered_html',
+    );
+    foreach ($customer_profile_panes as $type => $customer_profile_pane) {
+      // Custom User addressbook pane title.
+      $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $customer_profile_pane['title']);
+      $strings['commerce']['checkout']['addresses']['commerce_checkout_' . $type . '_user_addressbook_pane_title'] = $user_addressbook_pane_title;
+      // Help text User addressbook pane.
+      $user_addressbook_help_text = variable_get('commerce_checkout_' . $type . '_user_addressbook_help_text', $help_text_default);
+      $strings['commerce']['checkout']['addresses']['commerce_checkout_' . $type . '_user_addressbook_help_text'] = $user_addressbook_help_text['value'];
+      // Help text for add new customer profile form.
+      $add_new_customer_profile_help_text = variable_get('commerce_checkout_' . $type . '_add_new_customer_profile_help_text', $help_text_default);
+      $strings['commerce']['checkout']['addresses']['commerce_checkout_' . $type . '_add_new_customer_profile_help_text'] = $add_new_customer_profile_help_text['value'];
+    }
+  }
+  return $strings;
+}
