@@ -72,12 +72,29 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   $pane_form = array();
 
   $pane_id = $checkout_pane['pane_id'];
-  if (empty($form_state['customer_profiles_panes'])) {
+  if (empty($form_state['customer_profiles_panes']) && empty($form_state['#user_addressbook_profile_type'])) {
     $panes = user_addressbook_commerce_customer_profile_panes();
-    $form_state['customer_profiles_panes'] = array_values($panes);
+    // Check if it is about changing a specific address from checkout review page.
+    $path_parts = arg();
+    if (isset($path_parts[3]) && $panes[$path_parts[3]]) {
+      $form_state['#user_addressbook_profile_type'] = $path_parts[3];
+    }
+    if (!empty($form_state['#user_addressbook_profile_type'])) {
+      $form_state['checkout_page']['next_page'] = 'review';
+      $form_state['customer_profiles_panes'][0] = $panes[$form_state['#user_addressbook_profile_type']];
+    }
+    else {
+      $form_state['customer_profiles_panes'] = array_values($panes);
+    }
     if (!isset($form_state['customer_profiles_step'])) {
       $form_state['customer_profiles_step'] = 0;
     }
+  }
+  // Always change the next page if it is about changing
+  // a specific address from checkout review page.
+  // For form rebuilt.
+  if (!empty($form_state['#user_addressbook_profile_type'])) {
+    $form_state['checkout_page']['next_page'] = 'review';
   }
   $type = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']]['type'];
   if (!isset($order->data['addresses'])) {

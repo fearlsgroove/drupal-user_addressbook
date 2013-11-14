@@ -51,10 +51,27 @@ function user_addressbook_commerce_user_addressbook_address_type_info() {
 /**
  * Implements hook_entity_view().
  *
- * Adds the "edit", "delete" and "set as default" links to the customer profile.
+ * Adds the change address link to the customer profile view
+ * on checkout review.
  */
 function user_addressbook_commerce_entity_view($entity, $type, $view_mode, $langcode) {
-  if ($type == 'user_address' && $view_mode == 'user_addressbook_checkout') {
+  if ($type == 'commerce_customer_profile' && $view_mode == 'customer') {
+    // For checkout review page only.
+    $menu_item = menu_get_item();
+    if ($menu_item['map'][0] == 'checkout' && $menu_item['map'][2]['page_id'] == 'review') {
+      $order = $menu_item['map'][1];
+      $links = array();
+      $links['change_address'] = array(
+        '#theme' => 'link',
+        '#text' => t('Change %profile_type address', array('%profile_type' => $entity->type)),
+        '#path' => 'checkout/' . $order->order_id . '/addresses/' . $entity->type,
+        '#options' => array(
+          'attributes' => array(),
+          'html' => TRUE,
+         ),
+      );
+      $entity->content['user_addressbook_options'] = $links;
+    }
   }
 }
 
