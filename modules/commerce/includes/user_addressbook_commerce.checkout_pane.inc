@@ -85,7 +85,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
   }
   $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']]['title']);
   $user_addressbook_pane_title = commerce_i18n_string('commerce:checkout:addresses:commerce_checkout_' . $type . '_user_addressbook_pane_title', $user_addressbook_pane_title, array('sanitize' => FALSE));
-  $checkout_pane['title'] = $user_addressbook_pane_title;
+  $checkout_pane['title'] = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']]['title'] = $user_addressbook_pane_title;
   $field_name = variable_get('commerce_customer_profile_' . $type . '_field', '');
 
   // Find the referenced profile using the related reference field...
@@ -335,12 +335,15 @@ function user_addressbook_commerce_field_handler_checkout_select_user_address_su
 
   $customer_profile = $form_state['pane_' . $pane_id]['profile'];
   $order = $form_state['order'];
+  $customer_profile_pane = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']];
 
   // Use this event to do extra operations with Rules to the new account and/or order.
   rules_invoke_all('user_addressbook_commerce_user_address_select', $user_address, $customer_profile, $order);
   // Set the user address order data for this type.
   $order->data['addresses'][$customer_profile->type] = $user_address->address_id;
   commerce_order_save($order);
+  // Select address message.
+  drupal_set_message(t('Address %address_name was selected for %profile_pane.', array('%address_name' => $user_address->name, '%profile_pane' => $customer_profile_pane['title'])));
   // Next profile
   $form_state['customer_profiles_step']++;
   // Redirect to the next checkout step.
@@ -388,6 +391,7 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
 
   $customer_profile = $form_state['values'][$pane_id]['customer_profile'];
   $order = $form_state['order'];
+  $customer_profile_pane = $form_state['customer_profiles_panes'][$form_state['customer_profiles_step']];
 
   // Notify field widgets.
   field_attach_submit('commerce_customer_profile', $customer_profile, $form[$pane_id], $form_state);
@@ -406,6 +410,10 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
     $order->data['profiles']['customer_profile_' . $customer_profile->type] = $profile->profile_id;
   }
 
+  // Save order customer profile message.
+  drupal_set_message(t('Address of %profile_pane added to your order.', array('%profile_pane' => $customer_profile_pane['title'])));
+
+  // Customer profile to user address.
   if (!empty($form_state['values'][$pane_id]['add_to_user_addressbook'])) {
     $user_address = user_addressbook_new($order->uid);
     if (!empty($form_state['values'][$pane_id]['user_address_name'])) {
@@ -418,6 +426,8 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
     }
     $order->data['addresses'][$customer_profile->type] = $user_address->address_id;
     commerce_order_save($order);
+    // Save user address message.
+    drupal_set_message(t('%address_name address of %profile_pane added to your addressbook.', array('%address_name' => $user_address->name, '%profile_pane' => $customer_profile_pane['title'])));
   }
   else {
     $order->data['addresses'][$customer_profile->type] = 'edit';
