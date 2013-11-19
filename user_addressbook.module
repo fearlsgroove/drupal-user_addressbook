@@ -100,13 +100,7 @@ function user_addressbook_menu() {
     'file' => 'includes/user_addressbook.admin.inc',
     'weight' => 10,
   );
-/*
-  $items['user/%user/addresses/address/%user_address/view'] = array(
-    'title' => 'View',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -10,
-  );
-*/
+
   $items['user/%user/addresses/edit/%user_address'] = array(
     'title' => 'Edit',
     'page callback' => 'drupal_get_form',
@@ -148,16 +142,19 @@ function user_addressbook_menu() {
  */
 function user_addressbook_permission() {
   $permissions = array(
-    "edit own user_address entities" => array(
+    'administer user_address entities' => array(
+      'title' => t('Administer user addreses entities'),
+    ),
+    'edit own user_address entities' => array(
       'title' => t('Edit own user addresses'),
     ),
-    "edit any user_address entities" => array(
+    'edit any user_address entities' => array(
       'title' => t('Edit any user addresses'),
     ),
-    "view own user_address entities" => array(
+    'view own user_address entities' => array(
       'title' => t('View own user addresses'),
     ),
-    "view any user_address entities" => array(
+    'view any user_address entities' => array(
       'title' => t('View any user addresses'),
     ),
   );
@@ -202,8 +199,8 @@ function user_addressbook_views_api() {
 /**
  * Fetch a user_addressbook object.
  *
- * @param $addressbook_id
- *   Integer specifying the addressbook id.
+ * @param $address_id
+ *   Integer specifying the address id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
@@ -217,16 +214,16 @@ function user_address_load($address_id, $reset = FALSE) {
 }
 
 /**
- * Load multiple profiles based on certain conditions.
+ * Load multiple user addreses based on certain conditions.
  *
- * @param $pids
- *   An array of profile IDs.
+ * @param $address_ids
+ *   An array of address IDs.
  * @param $conditions
- *   An array of conditions to match against the {profile} table.
+ *   An array of conditions to match against the {user_address} table.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   An array of profile objects, indexed by pid.
+ *   An array of user address objects, indexed by address_id.
  *
  * @see entity_load()
  * @see user_addressbook_load()
@@ -238,18 +235,15 @@ function user_address_load_multiple($address_ids = array(), $conditions = array(
 
 
 /**
- * Fetch profiles by account.
+ * Fetch user addreses by account.
  *
  * @param $account
- *   The user account to load profiles for, or its uid.
- * @param $type_name
- *   To load a single profile, pass the type name of the profile to load.
+ *   The user account to load addreses for, or its uid.
  * @return
- *   Either a single profile or an array of profiles keyed by profile type.
+ *   An array of user address objects, indexed by address_id.
  *
  * @see user_addressbook_load_multiple()
- * @see profile2_profile2_delete()
- * @see Profile::save()
+ * @see user_addressbook_entity_delete()
  */
 function user_addresses_load_by_user($account) {
   // Use a separate query to determine all profile ids per user and cache them.
@@ -290,7 +284,7 @@ function user_addressbook_enable() {
 }
 
 /**
- * Ensures the address field is present fir the user_address entities.
+ * Ensures the address field is present for the user_address entities.
  */
 function user_addressbook_entity_configure() {
   // Define an addressfield for the user_address entities.
@@ -343,22 +337,15 @@ function user_addressbook_entity_configure() {
 
 /**
  * Page callback for listing user addresses.
- *
- * This is replaced by User addressbook Views Page.
  */
 function user_addressbook_page($account) {
-  //$form = '';
-  //$form = _user_addressbook_retrieve_view_form(array(), array(), 'user_addressbook', 'default', array($user->uid, 'user-addressbook-wrapper'));
-  //$output .= '<div id="user-addressbook-wrapper">' . views_embed_view('user_addressbook', 'default', $account->uid) . '</div>';
   $output = drupal_get_form('user_addressbook_page_form', $account);
 
   return $output;
 }
 
 /**
- * Page callback for listing user addresses.
- *
- * This is replaced by User addressbook Views Page.
+ * Build the form for listing user addresses page.
  */
 function user_addressbook_page_form($form, &$form_state, $account) {
   $form['user_addresses'] = array(
@@ -373,10 +360,7 @@ function user_addressbook_page_form($form, &$form_state, $account) {
 }
 
 /**
- * Page callback for listing customer profiles of a certain type.
- *
- * Embeds a view that shows the current default profile, and a view that shows
- * all other profiles of the same type.
+ * User address entity View callback.
  */
 function user_address_view($user_address, $view_mode = 'user_addressbook') {
   return $user_address->view($view_mode);
@@ -385,32 +369,13 @@ function user_address_view($user_address, $view_mode = 'user_addressbook') {
 /**
  * Implements hook_entity_view().
  *
- * Adds the "edit", "delete" and "set as default" links to the customer profile.
+ * Adds the "edit", "delete" links to the user address display.
  */
 function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
   if ($type == 'user_address' && $view_mode == 'user_addressbook') {
     $links = array();
     global $user;
     if (user_access('edit own user_address entities')) {
-      /*
-      $user_address_types = user_addressbook_address_types();
-      drupal_add_library('system', 'drupal.ajax');
-      foreach ($user_address_types as $type => $user_address_type) {
-        $default = user_addressbook_get_default_addresses($entity->uid, $type);
-        if (empty($default) || ($default != $entity->address_id)) {
-          $links['default_' . $type] = array(
-            '#theme' => 'link',
-            '#text' => t('Set as %type_name default address', array('%type_name' => $user_address_type['title'])),
-            '#path' => 'user/' . $entity->uid . '/addresses/default/' . $entity->address_id . '/' . $type . '/nojs',
-            '#options' => array(
-              'attributes' => array('class' => array('use-ajax')),
-              'html' => TRUE,
-             ),
-            '#suffix' => ' | ',
-          );
-        }
-      }
-      */
       $links['edit'] = array(
         '#theme' => 'link',
         '#text' => t('edit'),
@@ -437,15 +402,13 @@ function user_addressbook_entity_view($entity, $type, $view_mode, $langcode) {
 }
 
 /**
- * Returns an initialized customer profile object.
+ * Returns an initialized user address object.
  *
- * @param $type
- *   The type of customer profile to create.
  * @param $uid
- *   The uid of the user the customer profile is for.
+ *   The uid of the user the address is for.
  *
  * @return
- *   A customer profile object with all default fields initialized.
+ *   A user address object with all default fields initialized.
  */
 function user_addressbook_new($uid = 0) {
   return entity_get_controller('user_address')->create(array(
@@ -456,7 +419,7 @@ function user_addressbook_new($uid = 0) {
 /**
  * Implements hook_entity_insert().
  *
- * Set the new user_address as default if there's none.
+ * Set the new user_address as default if there is none.
  */
 function user_addressbook_entity_insert($user_address) {
   if (!empty($user_address->address_id)) {
@@ -549,15 +512,15 @@ function user_addressbook_set_default_address($user_address, $type = 'default') 
 }
 
 /**
- * Returns the default profile id for a specific uid and profile type.
+ * Returns the default user address id for a specific uid and address type.
  *
  * @param $uid
- *   The uid of the user whose default profile id should be returned.
+ *   The uid of the user whose default user address id should be returned.
  * @param $type
- *   The type of customer profile to look up.
+ *   The type of user address to look up.
  *
  * @return
- *  The id of the default profile if set, FALSE otherwise.
+ *  The id of the default user address if set, FALSE otherwise.
  */
 function user_addressbook_get_default_addresses($uid, $type = NULL) {
   $users_default_addresses = &drupal_static(__FUNCTION__, array());

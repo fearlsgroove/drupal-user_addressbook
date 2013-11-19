@@ -2,11 +2,11 @@
 
 /**
  * @file
- * User page callback file for the user_addressbook module.
+ * User address admin callback file for the user_addressbook module.
  */
 
  /**
- * Form builder; edit a user account or one of their profile categories.
+ * Form builder; edit a user address.
  *
  * @ingroup forms
  * @see user_account_form()
@@ -45,16 +45,6 @@ function user_addressbook_address_form($form, &$form_state, $user_address = NULL
     '#value' => t('Save'),
   );
 
-  /*
-  $form['actions']['cancel'] = array(
-    '#type' => 'submit',
-    '#value' => t('Cancel account'),
-    '#submit' => array('user_edit_cancel_submit'),
-    '#access' => $account->uid > 1 && (($account->uid == $user->uid && user_access('cancel account')) || user_access('administer users')),
-  );
-  }
-  */
-
   $form['#validate'][] = 'user_addressbook_address_form_validate';
   // Add the final user addressbook form submit handler.
   $form['#submit'][] = 'user_addressbook_address_form_submit';
@@ -70,7 +60,7 @@ function user_addressbook_address_form_validate($form, &$form_state) {
 }
 
 /**
- * Submit function for the user account and profile editing form.
+ * Submit function for the user address editing form.
  */
 function user_addressbook_address_form_submit($form, &$form_state) {
   $user_address = &$form_state['user_address'];
@@ -94,7 +84,7 @@ function user_addressbook_address_form_submit($form, &$form_state) {
  * Page callback for deleting a customer profile.
  *
  * @see confirm_form()
- * @see commerce_addressbook_profile_options_delete_form_submit()
+ * @see user_addressbook_address_options_delete_form_submit()
  */
 function user_addressbook_address_options_delete_form($form, &$form_state, $account, $user_address) {
 

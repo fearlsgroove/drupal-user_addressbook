@@ -20,7 +20,7 @@ function user_addressbook_commerce_checkout_pane_settings_form($checkout_pane) {
       '#type' => 'fieldset',
       '#title' => $customer_profile_pane['title'],
     );
-    // Help text User addressbook pane.
+    // Custom pane title.
     $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $customer_profile_pane['title']);
     $form[$type]['commerce_checkout_' . $type . '_user_addressbook_pane_title'] = array(
       '#type' => 'textfield',
@@ -216,6 +216,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     $pane_form['user_addresses']['#weight'] = -100;
   }
 
+  // Add new profile button.
   if ($mode == 'select_address' || empty($user_addresses)) {
     $pane_form['customer_profile'] = array(
       '#type' => 'submit',
@@ -229,6 +230,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     );
   }
 
+  // Add/edit profile form. 
   if (in_array($mode, array('new_customer_profile', 'edit_profile')) || empty($user_addresses)) {
     if ($mode == 'new_customer_profile') {
       $new_profile = commerce_customer_profile_new($type, $order->uid);
@@ -314,7 +316,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
       );
     }
 
-    // Cancel add new customer profile.
+    // Save button for add/edit customer profile.
     $pane_form['save'] = array(
       '#type' => 'submit',
       '#value' => t('Save'),
@@ -323,10 +325,10 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
         'callback' => 'user_addressbook_ajax_form_refresh',
         'wrapper' => strtr($pane_id, '_', '-') . '-ajax-wrapper',
       ),
-      '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile_save'),
+      '#submit' => array('user_addressbook_commerce_checkout_pane_customer_profile_save'),
     );
+    // Cancel button for add/edit customer profile form.
     if (!empty($user_addresses)) {
-      // Cancel add new customer profile.
       $pane_form['cancel'] = array(
         '#type' => 'submit',
         '#value' => t('Cancel'),
@@ -335,7 +337,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
           'callback' => 'user_addressbook_ajax_form_refresh',
           'wrapper' => strtr($pane_id, '_', '-') . '-ajax-wrapper',
         ),
-        '#submit' => array('user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel'),
+        '#submit' => array('user_addressbook_commerce_checkout_pane_customer_profile_form_cancel'),
       );
     }
   }
@@ -344,7 +346,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
 }
 
 /**
- * Submit callback for the "add new" button.
+ * Submit callback for the "Select" address button.
  */
 function user_addressbook_commerce_field_handler_checkout_select_user_address_submit($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#array_parents']);
@@ -368,6 +370,7 @@ function user_addressbook_commerce_field_handler_checkout_select_user_address_su
     $order = commerce_order_status_update($form_state['order'], 'checkout_' . $form_state['checkout_page']['next_page'], FALSE, NULL, t('Customer continued to the next checkout page via a submit button.'));
     $form_state['redirect'] = 'checkout/' . $order->order_id . '/' . $form_state['checkout_page']['next_page'];
   }
+  // Form rebuild.
   else {
     $form_state['pane_' . $pane_id]['mode'] = 'select_address';
     $form_state['pane_' . $pane_id]['action'] = 'select_address';
@@ -376,7 +379,7 @@ function user_addressbook_commerce_field_handler_checkout_select_user_address_su
 }
 
 /**
- * Submit callback for the "add new" button.
+ * Submit callback for the "view addressbook" button.
  */
 function user_addressbook_commerce_checkout_pane_view_addressbook($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#parents']);
@@ -385,7 +388,7 @@ function user_addressbook_commerce_checkout_pane_view_addressbook($form, &$form_
 }
 
 /**
- * Submit callback for the "add new" button.
+ * Submit callback for the "add new" customer profile button.
  */
 function user_addressbook_commerce_checkout_pane_add_new_customer_profile($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#parents']);
@@ -393,6 +396,9 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile($form,
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Validate callback for the address "name" form element.
+ */
 function user_addressbook_commerce_user_address_name_validate($element, &$form_state, $form) {
   $pane_id = reset($form_state['triggering_element']['#array_parents']);
   if (empty($element['#value']) && !empty($form_state['values'][$pane_id]['add_to_user_addressbook'])) {
@@ -401,9 +407,9 @@ function user_addressbook_commerce_user_address_name_validate($element, &$form_s
 }
 
 /**
- * Submit callback for the "add new" button.
+ * Submit callback for the "Save" button of the add/edit customer profile form.
  */
-function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($form, &$form_state) {
+function user_addressbook_commerce_checkout_pane_customer_profile_save($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#parents']);
 
   $customer_profile = $form_state['values'][$pane_id]['customer_profile'];
@@ -465,9 +471,9 @@ function user_addressbook_commerce_checkout_pane_add_new_customer_profile_save($
 }
 
 /**
- * Submit callback for the "cancel" button.
+ * Submit callback for the "cancel" button of the add/edit customer profile form.
  */
-function user_addressbook_commerce_checkout_pane_add_new_customer_profile_cancel($form, &$form_state) {
+function user_addressbook_commerce_checkout_pane_customer_profile_form_cancel($form, &$form_state) {
   $pane_id = reset($form_state['triggering_element']['#array_parents']);
 
   $customer_profile = $form_state['pane_' . $pane_id]['customer_profile'];

@@ -23,7 +23,7 @@ function user_addressbook_views_data() {
   );
   $data['user_address']['table']['entity type'] = 'user_address';
 
-  // Expose the profile ID.
+  // Expose the address ID.
   $data['user_address']['address_id'] = array(
     'title' => t('User address ID'),
     'help' => t('The unique internal identifier of the user address.'),
@@ -42,7 +42,7 @@ function user_addressbook_views_data() {
     ),
   );
 
-  // Expose the profile ID.
+  // Expose the user address name.
   $data['user_address']['name'] = array(
     'title' => t('User address name'),
     'help' => t('The name identifier of the user address.'),
@@ -88,7 +88,7 @@ function user_addressbook_views_data() {
     ),
   );
 
-  // Expose the profile status.
+  // Expose the user address status.
   $data['user_address']['status'] = array(
     'title' => t('Status'),
     'help' => t('Whether or not the address is active.'),

@@ -2,23 +2,23 @@
 
 /**
  * @file
- * The controller for the customer profile entity containing the CRUD operations.
+ * The controller for the user address entity containing the CRUD operations.
  */
 
 /**
- * The controller class for customer profiles contains methods for the profile
+ * The controller class for user addresses contains methods for the user address
  * CRUD operations. The load method is inherited from the default controller.
  */
 class UserAddressEntityController  extends EntityAPIController {
 
   /**
-   * Create a default customer profile.
+   * Create a default user address.
    *
    * @param array $values
    *   An array of values to set, keyed by property name.
    *
    * @return
-   *   A customer profile object with all default fields initialized.
+   *   A user address object with all default fields initialized.
    */
   public function create(array $values = array()) {
     $values += array(
@@ -34,28 +34,26 @@ class UserAddressEntityController  extends EntityAPIController {
   }
 
   /**
-   * Unserializes the data property of loaded customer profiles.
+   * Unserializes the data property of loaded user addresses.
    */
-  public function attachLoad(&$queried_profiles, $revision_id = FALSE) {
-    foreach ($queried_profiles as $profile_id => &$profile) {
-      $profile->data = unserialize($profile->data);
+  public function attachLoad(&$queried_addresses, $revision_id = FALSE) {
+    foreach ($queried_addresses as $address_id => &$user_address) {
+      $user_address->data = unserialize($user_address->data);
     }
 
     // Call the default attachLoad() method. This will add fields and call
-    // hook_commerce_customer_profile_load().
-    parent::attachLoad($queried_profiles, $revision_id);
+    // hook_user_addressbook_user_address_load().
+    parent::attachLoad($queried_addresses, $revision_id);
   }
 
   /**
-   * Saves a customer profile.
+   * Saves an user address.
    *
-   * When saving a profile without an ID, this function will create a new
-   * profile at that time. Subsequent profiles that should be saved as new
-   * revisions should set $profile->revision to TRUE and include a log string in
-   * $profile->log.
+   * When saving a user address without an ID, this function will create a new
+   * user address at that time.
    *
-   * @param $profile
-   *   The full customer profile object to save.
+   * @param $user_address
+   *   The full user address object to save.
    * @param $transaction
    *   An optional transaction object.
    *

@@ -3,7 +3,7 @@
 /**
  * @file
  *
- * A Views' field handler for editing a node title.
+ * A Views' field handler for selecting the user address.
  *
  */
 class user_addressbook_commerce_field_handler_checkout_select_user_address extends views_handler_field {
@@ -52,7 +52,7 @@ class user_addressbook_commerce_field_handler_checkout_select_user_address exten
         '#type' => 'value',
         '#value' => $row->{$this->aliases['address_id']},
       );
-      // Add a text field to the form.  This array convention
+      // Add submit button to the form.  This array convention
       // corresponds to the placeholder HTML comment syntax.
       $form[$this->options['id']][$row_index]['select_button'] = array(
         '#type' => 'button',
