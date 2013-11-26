@@ -88,27 +88,6 @@ function user_addressbook_views_data() {
     ),
   );
 
-  // Expose the user address status.
-  $data['user_address']['status'] = array(
-    'title' => t('Status'),
-    'help' => t('Whether or not the address is active.'),
-    'field' => array(
-      'handler' => 'views_handler_field_boolean',
-      'click sortable' => TRUE,
-      'output formats' => array(
-        'active-disabled' => array(t('Active'), t('Disabled')),
-      ),
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_boolean_operator',
-      'label' => t('Active'),
-      'type' => 'yes-no',
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-  );
-
   // Expose the created and changed timestamps.
   $data['user_address']['created'] = array(
     'title' => t('Created date'),

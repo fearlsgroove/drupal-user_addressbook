@@ -25,7 +25,6 @@ class UserAddressEntityController  extends EntityAPIController {
       'address_id' => NULL,
       'name' => '',
       'uid' => '',
-      'status' => 1,
       'created' => '',
       'changed' => '',
     );

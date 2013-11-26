@@ -28,12 +28,6 @@ function user_addressbook_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'status' => array(
-        'description' => 'Boolean indicating whether the user addressbook is active or not.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'created' => array(
         'description' => 'The Unix timestamp when the user addressbook was created.',
         'type' => 'int',
