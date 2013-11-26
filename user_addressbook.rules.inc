@@ -16,7 +16,7 @@ function user_addressbook_rules_action_info() {
   $actions = array();
 
   $actions['user_addressbook_set_default_address'] = array(
-    'label' => t('Update the order state'),
+    'label' => t('Set the user address as default of the given type'),
     'parameter' => array(
       'user_address' => array(
         'type' => 'user_address',
