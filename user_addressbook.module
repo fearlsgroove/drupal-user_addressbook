@@ -472,6 +472,15 @@ function user_addressbook_entity_delete($entity, $type) {
 }
 
 /**
+ * Implements hook_user_delete().
+ */
+function user_addressbook_user_delete($account) {
+  foreach (user_addresses_load_by_user($account) as $user_address) {
+    entity_delete('user_address', $user_address->address_id);
+  }
+}
+
+/**
  * Find an existing default address for a given user and
  * update it to a new address, or set it if a default is not already set.
  */
