@@ -498,6 +498,29 @@ function user_addressbook_address_types() {
 }
 
 /**
+ * Callback for getting user address properties.
+ *
+ * @see user_addressbook_entity_property_info()
+ */
+function user_address_get_properties($user_address, array $options, $name) {
+  switch ($name) {
+    case 'user':
+      return $user_address->uid;
+  }
+}
+
+/**
+ * Callback for setting user addres properties.
+ *
+ * @see user_addressbook_entity_property_info()
+ */
+function user_address_set_properties($user_address, $name, $value) {
+  if ($name == 'user') {
+    $user_address->uid = $value;
+  }
+}
+
+/**
  * Find an existing default address for a given user and
  * update it to a new address, or set it if a default is not already set.
  */
