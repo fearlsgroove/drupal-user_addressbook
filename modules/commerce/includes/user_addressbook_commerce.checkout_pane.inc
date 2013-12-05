@@ -10,6 +10,12 @@
  */
 function user_addressbook_commerce_checkout_pane_settings_form($checkout_pane) {
   $form = array();
+  $form['commerce_checkout_user_addressbook_skip_addresses_page'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Skip Addresses checkout page for default address set.'),
+    'description' => t('It will happen first time only, when the order has no customer profile defined.'),
+    '#default_value' => variable_get('commerce_checkout_user_addressbook_skip_addresses_page', FALSE),
+  );
   $customer_profile_panes = user_addressbook_commerce_customer_profile_panes();
   $help_text_default = array(
     'value' => '',
@@ -158,6 +164,7 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
     }
     commerce_order_save($order);
   }
+
   $wrapper_id = strtr($pane_id, '_', '-') . '-ajax-wrapper';
   // Remember the current profile and mode in form state.
   $form_state['pane_' . $checkout_pane['pane_id']] = array(
