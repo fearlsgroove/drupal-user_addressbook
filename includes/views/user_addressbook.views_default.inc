@@ -54,6 +54,20 @@ function user_addressbook_views_default_views() {
   $handler->display->display_options['fields']['user_address_set_default']['id'] = 'user_address_set_default';
   $handler->display->display_options['fields']['user_address_set_default']['table'] = 'user_address';
   $handler->display->display_options['fields']['user_address_set_default']['field'] = 'user_address_set_default';
+  /* Field: User address: Edit link */
+  $handler->display->display_options['fields']['edit_user_address']['id'] = 'edit_user_address';
+  $handler->display->display_options['fields']['edit_user_address']['table'] = 'user_address';
+  $handler->display->display_options['fields']['edit_user_address']['field'] = 'edit_user_address';
+  $handler->display->display_options['fields']['edit_user_address']['label'] = '';
+  $handler->display->display_options['fields']['edit_user_address']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['edit_user_address']['text'] = 'Edit address';
+  /* Field: User address: Delete link */
+  $handler->display->display_options['fields']['delete_user_address']['id'] = 'delete_user_address';
+  $handler->display->display_options['fields']['delete_user_address']['table'] = 'user_address';
+  $handler->display->display_options['fields']['delete_user_address']['field'] = 'delete_user_address';
+  $handler->display->display_options['fields']['delete_user_address']['label'] = '';
+  $handler->display->display_options['fields']['delete_user_address']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['delete_user_address']['text'] = 'Remove';
   /* Contextual filter: User address: Owner uid */
   $handler->display->display_options['arguments']['uid']['id'] = 'uid';
   $handler->display->display_options['arguments']['uid']['table'] = 'user_address';
