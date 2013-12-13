@@ -626,8 +626,8 @@ function _user_addressbook_retrieve_view_form($form, &$form_state, $view_id, $di
   $view->pre_execute();
   $view->execute();
   // Output of the view, needed for building the view form.
-  $view->preview();
-  $output = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
+  $output = $view->preview();
+  //$output = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
 
   // Get the view form in the pane.
   $view_form = views_form($form, $form_state, $view, $output);

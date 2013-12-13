@@ -10,12 +10,12 @@
 function user_addressbook_views_data() {
   $data = array();
 
-  $data['user_address']['table']['group']  = t('User addresses');
+  $data['user_address']['table']['group']  = t('User address');
 
   $data['user_address']['table']['base'] = array(
     'field' => 'address_id',
-    'title' => t('User addresses'),
-    'help' => t('User addresses containing user defined addresses.'),
+    'title' => t('User address'),
+    'help' => t('User address containing user defined addresses.'),
     'defaults' => array(
       'field' => 'name',
     ),
@@ -263,6 +263,33 @@ function user_addressbook_views_data() {
     'help' => t('Set the current address as default.'),
     'field' => array(
       'handler' => 'user_addressbook_field_handler_user_address_set_default',
+    ),
+  );
+
+  $data['user_address_defaults']['table']['group'] = t('User Addressbook Defaults');
+  $data['user_address_defaults']['table']['join'] = array(
+    'user_address' => array(
+      'left_field' => 'address_id',
+      'field' => 'address_id',
+    ),
+  );
+
+  // Expose the profile type.
+  $data['user_address_defaults']['type'] = array(
+    'title' => t('User address default type'),
+    'help' => t('The human-readable name of the type of the customer profile.'),
+    'field' => array(
+      'handler' => 'user_addressbook_handler_field_user_address_default_type',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'user_addressbook_handler_filter_user_address_default_type',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
     ),
   );
 
