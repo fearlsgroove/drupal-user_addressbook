@@ -591,11 +591,38 @@ function _user_addressbook_retrieve_view_form($form, &$form_state, $view_id, $di
   $view->pre_execute();
   $view->execute();
   // Output of the view, needed for building the view form.
-  $output = $view->preview();
-  //$output = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
+  $view->preview();
+  $output = (!empty($view->result) || $view->style_plugin->even_empty()) ? $view->style_plugin->render($view->result) : '';
 
   // Get the view form in the pane.
   $view_form = views_form($form, $form_state, $view, $output);
+  $view_form['output']['#weight'] = 0;
+  // Add the other View elements to output,
+  // as header, footer and/or attachments.
+  if (!empty($view->header)) {
+    $view_form['header'] = array(
+      '#markup' => $view->display_handler->render_area('header', $empty_view),
+      '#weight' => -20,
+    );
+  }
+  if (!empty($view->attachment_before)) {
+    $view_form['attachment_before'] = array(
+      '#markup' => $view->attachment_before,
+      '#weight' => -10,
+    );
+  }
+  if (!empty($view->attachment_after)) {
+    $view_form['attachment_after'] = array(
+      '#markup' => $view->attachment_after,
+      '#weight' => 10,
+    );
+  }
+  if (!empty($view->footer)) {
+    $view_form['footer'] = array(
+      '#markup' => $view->display_handler->render_area('footer', $empty_view),
+      '#weight' => 20,
+    );
+  }
   $view_form['#view'] = $view;
   unset($view_form['actions']);
 
