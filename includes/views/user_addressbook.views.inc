@@ -295,3 +295,21 @@ function user_addressbook_views_data() {
 
   return $data;
 }
+
+/**
+ * Implements hook_views_data_alter()
+ */
+function user_addressbook_views_data_alter(&$data) {
+  // Reverse relationship from User.
+  $data['users']['user_address'] = array(
+    'relationship' => array(
+      'title' => t('User address owned'),
+      'help' => t('Relate user address to the user who owns it. This relationship will create one record for each user address item owned by the user.'),
+      'handler' => 'views_handler_relationship',
+      'base' => 'user_address',
+      'base field' => 'uid',
+      'field' => 'uid',
+      'label' => t('User addresses'),
+    ),
+  );
+}
