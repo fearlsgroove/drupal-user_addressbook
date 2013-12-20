@@ -26,6 +26,12 @@ function user_addressbook_commerce_checkout_pane_settings_form($checkout_pane) {
       '#type' => 'fieldset',
       '#title' => $customer_profile_pane['title'],
     );
+    $form[$type]['commerce_checkout_' . $type . '_user_addressbook_autosave'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Auto save to user address.'),
+      '#description' => t('The customer profile data will be saved by default as user address. If unchecked the saving will be optional.'),
+      '#default_value' => variable_get('commerce_checkout_' . $type . '_user_addressbook_autosave', FALSE),
+    );
     // Custom pane title.
     $user_addressbook_pane_title = variable_get('commerce_checkout_' . $type . '_user_addressbook_pane_title', $customer_profile_pane['title']);
     $form[$type]['commerce_checkout_' . $type . '_user_addressbook_pane_title'] = array(
@@ -292,23 +298,34 @@ function user_addressbook_commerce_checkout_pane_checkout_form($form, &$form_sta
       }
     }
 
-    $pane_form['add_to_user_addressbook'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Save to my addressbook'),
-      '#default_value' => ($mode == 'new_customer_profile') ? TRUE : FALSE,
-    );
+    $user_address_auto_save = variable_get('commerce_checkout_' . $type . '_user_addressbook_autosave', FALSE);
+    // Auto save to user address.
+    if ($user_address_auto_save) {
+      $pane_form['add_to_user_addressbook'] = array(
+        '#type' => 'value',
+        '#value' => 1,
+      );
+    }
+    // Optional saving to used address.
+    else {
+      $pane_form['add_to_user_addressbook'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Save to my addressbook'),
+        '#default_value' => ($mode == 'new_customer_profile') ? TRUE : FALSE,
+      );
 
-    $pane_form['user_address_name'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Address name') . ' ' . theme('form_required_marker', array()),
-      '#element_validate' => array('user_addressbook_commerce_user_address_name_validate'),
-      '#states' => array(
-        // Hide the settings when the select checkbox is disabled.
-        'invisible' => array(
-         ':input[name="user_addressbook[add_to_user_addressbook]"]' => array('checked' => FALSE),
+      $pane_form['user_address_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Address name') . ' ' . theme('form_required_marker', array()),
+        '#element_validate' => array('user_addressbook_commerce_user_address_name_validate'),
+        '#states' => array(
+          // Hide the settings when the select checkbox is disabled.
+          'invisible' => array(
+           ':input[name="user_addressbook[add_to_user_addressbook]"]' => array('checked' => FALSE),
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     if (!empty($user_addresses)) {
       $pane_form['user_address_set_default'] = array(
@@ -446,8 +463,22 @@ function user_addressbook_commerce_checkout_pane_customer_profile_save($form, &$
   // Customer profile to user address.
   if (!empty($form_state['values'][$pane_id]['add_to_user_addressbook'])) {
     $user_address = user_addressbook_new($order->uid);
+    // Set the user address name.
     if (!empty($form_state['values'][$pane_id]['user_address_name'])) {
       $user_address->name = $form_state['values'][$pane_id]['user_address_name'];
+    }
+    else {
+      $customer_profile_wrapper = entity_metadata_wrapper('commerce_customer_profile', $customer_profile);
+      $commerce_customer_address = $customer_profile_wrapper->commerce_customer_address->value();
+      if (!empty($commerce_customer_address['name_line'])) {
+        $user_address->name = $commerce_customer_address['name_line'];
+      }
+      elseif (!empty($commerce_customer_address['first_name'])) {
+        $user_address->name = $commerce_customer_address['first_name'] . ' ' . $commerce_customer_address['last_name'];
+      }
+      else {
+        $user_address->name = $commerce_customer_address['thoroughfare'];
+      }
     }
     // Use this event to do extra operations with Rules to the new account and/or order.
     rules_invoke_all('user_addressbook_commerce_add_new_customer_profile', $user_address, $customer_profile, $order);
