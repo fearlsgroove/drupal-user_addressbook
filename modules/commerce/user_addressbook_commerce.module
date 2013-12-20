@@ -59,7 +59,7 @@ function user_addressbook_commerce_user_addressbook_address_type_info() {
  * on checkout review.
  */
 function user_addressbook_commerce_entity_view($entity, $type, $view_mode, $langcode) {
-  if (user_access('edit own user_address entities') && $type == 'commerce_customer_profile' && $view_mode == 'customer') {
+  if ($type == 'commerce_customer_profile' && $view_mode == 'customer') {
     // For checkout review page only.
     $menu_item = menu_get_item();
     if ($menu_item['map'][0] == 'checkout' && $menu_item['map'][2]['page_id'] == 'review') {
@@ -68,12 +68,15 @@ function user_addressbook_commerce_entity_view($entity, $type, $view_mode, $lang
       $links['change_address'] = array(
         '#theme' => 'link',
         '#text' => t('Change %profile_type address', array('%profile_type' => $entity->type)),
-        '#path' => 'checkout/' . $order->order_id . '/addresses/' . $entity->type,
+        '#path' => 'checkout/' . $order->order_id . '/addresses',
         '#options' => array(
           'attributes' => array(),
           'html' => TRUE,
          ),
       );
+      if (user_access('edit own user_address entities')) {
+        $links['change_address']['path'] .= '/' . $entity->type;
+      }
       $entity->content['user_addressbook_options'] = $links;
     }
   }
