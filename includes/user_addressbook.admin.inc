@@ -87,15 +87,16 @@ function user_addressbook_address_form_submit($form, &$form_state) {
  * @see confirm_form()
  * @see user_addressbook_address_options_delete_form_submit()
  */
-function user_addressbook_address_options_delete_form($form, &$form_state, $account, $user_address) {
+function user_addressbook_address_options_delete_form($form, &$form_state, $user_address) {
 
   $form_state['user_address'] = $user_address;
+  $user_address_uri = entity_uri('user_address', $user_address);
 
   $content = entity_view('user_address', array($user_address->address_id => $user_address));
 
   $form = confirm_form($form,
     t('Are you sure you want to delete this address?'),
-    'user/' . $account->uid . '/addresses/',
+    $user_address_uri['redirect_path'],
     drupal_render($content) . '<p>' . t('Deleting this address cannot be undone.') . '</p>',
     t('Delete'),
     t('Cancel'),
