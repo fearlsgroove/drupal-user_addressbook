@@ -75,7 +75,8 @@ function user_addressbook_address_form_submit($form, &$form_state) {
 
   // Save the profile.
   entity_save('user_address', $user_address);
-  $form_state['redirect'] = 'user/' . $user_address->uid . '/addresses';
+  $user_address_uri = entity_uri('user_address', $user_address);
+  $form_state['redirect'] = $user_address_uri['redirect_path'];
 
   drupal_set_message(t('The changes have been saved.'));
 }
@@ -112,11 +113,12 @@ function user_addressbook_address_options_delete_form($form, &$form_state, $acco
  */
 function user_addressbook_address_options_delete_form_submit($form, &$form_state) {
   $user_address = $form_state['user_address'];
+  $user_address_uri = entity_uri('user_address', $user_address);
+  $form_state['redirect'] = $user_address_uri['redirect_path'];
   entity_delete('user_address', $user_address->address_id);
   db_delete('user_address_defaults')
     ->condition('address_id', $user_address->address_id)
     ->execute();
-  $form_state['redirect'] = 'user/' . $user_address->uid . '/addresses/';
 }
 
 /**

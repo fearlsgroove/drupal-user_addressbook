@@ -47,10 +47,10 @@ class user_addressbook_handler_field_user_address extends views_handler_field {
    */
   function render_link($data, $values) {
     if (!empty($this->options['link_to_user_address']) && $data !== NULL && $data !== '') {
-      $address_id = $this->get_value($values, 'address_id');
-      $uid = $this->get_value($values, 'uid');
+      $user_address = user_address_load($this->get_value($values, 'address_id'));
+      $user_address_uri = entity_uri('user_address', $user_address);
       $this->options['alter']['make_link'] = TRUE;
-      $this->options['alter']['path'] = 'user/' . $uid . '/addresses/address/' . $address_id;
+      $this->options['alter']['path'] = $user_address_uri['path'];
     }
 
     return $data;
