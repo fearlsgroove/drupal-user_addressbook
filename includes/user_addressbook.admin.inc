@@ -21,10 +21,10 @@ function user_addressbook_address_form($form, &$form_state, $user_address = NULL
   // During initial form build, add the entity to the form state for use during
   // form building and processing. During a rebuild, use what is in the form
   // state.
+  if (!$user_address) {
+    $user_address = user_addressbook_new($user->uid);
+  }
   if (empty($form_state['user_address'])) {
-    if (!$user_address) {
-      $user_address = user_addressbook_new($user->uid);
-    }
     $form_state['user_address'] = $user_address;
   }
   // Only show name field on registration form or user can change own username.
