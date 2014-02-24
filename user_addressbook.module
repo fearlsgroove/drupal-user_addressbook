@@ -20,8 +20,8 @@ function user_addressbook_entity_info() {
         'user_address' => array(
           'label' => t('User address'),
           'admin' => array(
-            'path' => 'admin/config/people/addressbook',
-            'access arguments' => array('administer user addressbooks'),
+            'path' => 'admin/config/people/addressbook/manage',
+            'access arguments' => array('administer user_address entities'),
           ),
         ),
       ),
@@ -144,6 +144,14 @@ function user_addressbook_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/user_addressbook.admin.inc',
     'weight' => 40,
+  );
+
+  // Administration pages.
+  $items['admin/config/people/addressbook'] = array(
+    'title' => t('User addresbook'),
+    'page callback' => 'user_addressbook_admin_page_redirect',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer user_address entities'),
   );
 
   return $items;
@@ -355,6 +363,13 @@ function user_addressbook_entity_configure() {
 
     field_create_instance($instance);
   }
+}
+
+/**
+ * Redirects a User addresbook configuration URL to its fields management page.
+ */
+function user_addressbook_admin_page_redirect() {
+  drupal_goto('admin/config/people/addressbook/manage/fields');
 }
 
 /**
