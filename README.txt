@@ -10,8 +10,8 @@ Requirements:
 
 =========================================================
 
-Drupal Commerce integration
-===========================
+Drupal Commerce (Checkout) integration
+======================================
 Tip : Make sure both User address and customer profile have the same entity structure (same fields/data)
 "User Addressbook Commerce" submodule in the project package.
 The customer user addresses from User addressbook could be used as customer profiles in checkout process.
