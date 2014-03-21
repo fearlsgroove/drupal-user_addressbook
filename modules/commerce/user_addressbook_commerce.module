@@ -207,8 +207,10 @@ function user_addressbook_commerce_commerce_checkout_router($order, $checkout_pa
 function user_addressbook_commerce_customer_profile_panes() {
   foreach (commerce_customer_profile_types() as $type => $profile) {
     // Only customer profiles with addressfield and checkout pane defined.
-    if ($profile['addressfield'] && $pane = reset(commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type)))) {
-      $panes[$type] = $pane;
+    $customer_profile_panes = commerce_checkout_panes(array('pane_id' => 'customer_profile_' . $type));
+    $customer_profile_pane = reset($customer_profile_panes);
+    if (!empty($profile['addressfield']) && $customer_profile_pane) {
+      $panes[$type] = $customer_profile_pane;
       $panes[$type]['type'] = $type;
     }
   }
