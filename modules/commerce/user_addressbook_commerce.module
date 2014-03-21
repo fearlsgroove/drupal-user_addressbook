@@ -75,7 +75,7 @@ function user_addressbook_commerce_entity_view($entity, $type, $view_mode, $lang
          ),
       );
       if (user_access('edit own user_address entities')) {
-        $links['change_address']['path'] .= '/' . $entity->type;
+        $links['change_address']['#path'] .= '/' . $entity->type;
       }
       $entity->content['user_addressbook_options'] = array(
         '#type' => 'container',
