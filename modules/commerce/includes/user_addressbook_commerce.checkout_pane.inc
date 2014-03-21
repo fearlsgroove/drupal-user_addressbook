@@ -516,7 +516,7 @@ function user_addressbook_commerce_checkout_pane_customer_profile_form_cancel($f
 
   $customer_profile = $form_state['pane_' . $pane_id]['customer_profile'];
   $order = $form_state['order'];
-  if ($order->data['addresses'][$customer_profile->type] == 'edit') {
+  if (!empty($order->data['addresses'][$customer_profile->type]) && $order->data['addresses'][$customer_profile->type] == 'edit') {
     unset($order->data['addresses'][$customer_profile->type]);
     commerce_order_save($order);
   }
