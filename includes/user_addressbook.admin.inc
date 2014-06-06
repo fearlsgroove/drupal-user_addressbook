@@ -15,8 +15,10 @@
  * @see user_profile_form_submit()
  * @see user_cancel_confirm_form_submit()
  */
-function user_addressbook_address_form($form, &$form_state, $user_address = NULL) {
-  global $user;
+function user_addressbook_address_form($form, &$form_state, $user_address = NULL, $user = NULL) {
+  if (!$user) {
+    global $user;
+  }
 
   // During initial form build, add the entity to the form state for use during
   // form building and processing. During a rebuild, use what is in the form
