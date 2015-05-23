@@ -42,8 +42,8 @@ function user_addressbook_commerce_user_addressbook_address_type_info() {
     foreach (commerce_customer_profile_types() as $type => $profile_type) {
       if ($profile_type['addressfield'] || isset($checkout_panes['customer_profile_' . $type])) {
         $user_address_types[$type] = array(
-          'type' => $type, 
-          'title' => $profile_type['name'], 
+          'type' => $type,
+          'title' => $profile_type['name'],
         );
       }
     }
