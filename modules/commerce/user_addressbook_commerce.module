@@ -40,7 +40,7 @@ function user_addressbook_commerce_user_addressbook_address_type_info() {
   $user_address_types = array();
   if (user_access('edit own user_address entities')) {
     foreach (commerce_customer_profile_types() as $type => $profile_type) {
-      if ($profile_type['addressfield'] || isset($checkout_panes['customer_profile_' . $type])) {
+      if (!empty($profile_type['addressfield']) || isset($checkout_panes['customer_profile_' . $type])) {
         $user_address_types[$type] = array(
           'type' => $type,
           'title' => $profile_type['name'],
@@ -136,7 +136,7 @@ function user_addressbook_commerce_commerce_checkout_pane_info() {
 function user_addressbook_commerce_commerce_checkout_pane_info_alter(&$checkout_panes) {
   // Disable the customer profiles panes if the addressbook is available.
   foreach (commerce_customer_profile_types() as $type => $profile_type) {
-    if ($profile_type['addressfield'] && isset($checkout_panes['customer_profile_' . $type])) {
+    if (!empty($profile_type['addressfield']) && isset($checkout_panes['customer_profile_' . $type])) {
       if (user_access('edit own user_address entities')) {
         $checkout_panes['customer_profile_' . $type]['enabled'] = FALSE;
         $checkout_panes['customer_profile_' . $type]['page'] = 'disabled';
